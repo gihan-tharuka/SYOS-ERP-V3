@@ -13,7 +13,7 @@
                 <%= request.getAttribute("error") %>
             </div>
         <% } %>
-        <form action="${pageContext.request.contextPath}/login" method="post">
+        <form action="login" method="post">
             <div class="form-group">
                 <label for="role">Role:</label>
                 <select id="role" name="role" required>

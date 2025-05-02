@@ -3,7 +3,6 @@ package dao;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 
 public class DatabaseConnection {
     private static DatabaseConnection instance;
@@ -39,8 +38,8 @@ public class DatabaseConnection {
     }
 
     private void handleSQLException(SQLException e) {
-        if (e instanceof com.mysql.cj.jdbc.exceptions.CommunicationsException) {
-            System.out.println("Error: Unable to connect to the database. Please ensure the database server is running and try again.");
+        if (e.getMessage().contains("Communications link failure")) {
+            System.out.println("Database connection failed. Please check if the database server is running.");
         } else {
             System.out.println("SQL Error: " + e.getMessage());
         }
@@ -50,7 +49,6 @@ public class DatabaseConnection {
         try {
             return connection != null && !connection.isClosed();
         } catch (SQLException e) {
-            e.printStackTrace();
             return false;
         }
     }
