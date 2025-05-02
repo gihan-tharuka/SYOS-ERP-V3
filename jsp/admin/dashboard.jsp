@@ -15,7 +15,7 @@
             <h2>Menu Options</h2>
             <ul>
                 <li><a href="user-management.jsp">User Management</a></li>
-                <li><a href="item/list.jsp">Item Management</a></li>
+                <li><a href="../item/list.jsp">Item Management</a></li>
                 <li><a href="main-stock.jsp">Main Stock Management</a></li>
                 <li><a href="shelf-stock.jsp">Shelf Stock Management</a></li>
                 <li><a href="sales.jsp">Sales Management</a></li>
