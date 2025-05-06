@@ -23,18 +23,13 @@
             </div>
             
             <div class="form-group">
-                <label for="description">Description:</label>
-                <textarea id="description" name="description" rows="3"></textarea>
-            </div>
-            
-            <div class="form-group">
                 <label for="price">Price:</label>
                 <input type="number" id="price" name="price" step="0.01" required>
             </div>
             
             <div class="form-group">
-                <label for="quantity">Quantity:</label>
-                <input type="number" id="quantity" name="quantity" required>
+                <label for="discount">Discount:</label>
+                <input type="number" id="discount" name="discount" step="0.01" value="0.00">
             </div>
             
             <div class="form-actions">

@@ -14,12 +14,12 @@
             
             <div class="form-group">
                 <label for="code">Item Code:</label>
-                <input type="text" id="code" name="code" value="${item.code}" readonly>
+                <input type="text" id="code" name="code" value="${item.itemCode}" readonly>
             </div>
             
             <div class="form-group">
                 <label for="name">Item Name:</label>
-                <input type="text" id="name" name="name" value="${item.name}" required>
+                <input type="text" id="name" name="name" value="${item.itemName}" required>
             </div>
             
             <div class="form-group">
@@ -30,6 +30,11 @@
             <div class="form-group">
                 <label for="price">Price:</label>
                 <input type="number" id="price" name="price" step="0.01" value="${item.price}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="discount">Discount:</label>
+                <input type="number" id="discount" name="discount" step="0.01" value="${item.discount}">
             </div>
             
             <div class="form-group">

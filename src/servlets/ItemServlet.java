@@ -2,8 +2,11 @@ package servlets;
 
 import command.*;
 import dao.ItemDAO;
+import dao.DatabaseConnection;
 import model.Item;
 import view.ItemManagementView;
+import observer.ReorderSubject;
+import observer.Subject;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,17 +14,31 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 @WebServlet("/item-management")
 public class ItemServlet extends HttpServlet {
     private ItemDAO itemDAO;
     private ItemManagementView view;
+    private ReorderSubject reorderSubject;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        itemDAO = new ItemDAO();
-        view = new ItemManagementView();
+        try {
+            // Get database connection from singleton
+            Connection connection = DatabaseConnection.getInstance().getConnection();
+            
+            // Initialize reorder subject
+            reorderSubject = new ReorderSubject();
+            
+            // Initialize DAO and view
+            itemDAO = new ItemDAO(connection, reorderSubject);
+            view = new ItemManagementView();
+        } catch (Exception e) {
+            throw new ServletException("Error initializing servlet", e);
+        }
     }
 
     @Override
@@ -61,26 +78,24 @@ public class ItemServlet extends HttpServlet {
         
         switch (action) {
             case "add":
-                Item newItem = new Item();
-                newItem.setCode(request.getParameter("code"));
-                newItem.setName(request.getParameter("name"));
-                newItem.setDescription(request.getParameter("description"));
-                newItem.setPrice(Double.parseDouble(request.getParameter("price")));
-                newItem.setQuantity(Integer.parseInt(request.getParameter("quantity")));
+                String itemCode = request.getParameter("code");
+                String itemName = request.getParameter("name");
+                double price = Double.parseDouble(request.getParameter("price"));
+                double discount = Double.parseDouble(request.getParameter("discount"));
                 
+                Item newItem = new Item(0, itemCode, itemName, price, discount);
                 Command addCommand = new AddItemCommand(itemDAO, view);
                 addCommand.execute();
                 response.sendRedirect("item-management");
                 break;
                 
             case "edit":
-                Item updatedItem = new Item();
-                updatedItem.setCode(request.getParameter("code"));
-                updatedItem.setName(request.getParameter("name"));
-                updatedItem.setDescription(request.getParameter("description"));
-                updatedItem.setPrice(Double.parseDouble(request.getParameter("price")));
-                updatedItem.setQuantity(Integer.parseInt(request.getParameter("quantity")));
+                itemCode = request.getParameter("code");
+                itemName = request.getParameter("name");
+                price = Double.parseDouble(request.getParameter("price"));
+                discount = Double.parseDouble(request.getParameter("discount"));
                 
+                Item updatedItem = new Item(0, itemCode, itemName, price, discount);
                 Command editCommand = new EditItemCommand(itemDAO, view);
                 editCommand.execute();
                 response.sendRedirect("item-management");

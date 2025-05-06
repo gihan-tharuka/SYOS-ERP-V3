@@ -19,23 +19,21 @@
                 <tr>
                     <th>Code</th>
                     <th>Name</th>
-                    <th>Description</th>
                     <th>Price</th>
-                    <th>Quantity</th>
+                    <th>Discount</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <c:forEach var="item" items="${items}">
                     <tr>
-                        <td>${item.code}</td>
-                        <td>${item.name}</td>
-                        <td>${item.description}</td>
+                        <td>${item.itemCode}</td>
+                        <td>${item.itemName}</td>
                         <td>${item.price}</td>
-                        <td>${item.quantity}</td>
+                        <td>${item.discount}</td>
                         <td>
-                            <a href="item-management?action=edit&code=${item.code}" class="btn-edit">Edit</a>
-                            <a href="item-management?action=delete&code=${item.code}" class="btn-delete" 
+                            <a href="item-management?action=edit&code=${item.itemCode}" class="btn-edit">Edit</a>
+                            <a href="item-management?action=delete&code=${item.itemCode}" class="btn-delete" 
                                onclick="return confirm('Are you sure you want to delete this item?')">Delete</a>
                         </td>
                     </tr>
