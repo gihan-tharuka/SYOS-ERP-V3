@@ -64,7 +64,8 @@ public class ItemServlet extends HttpServlet {
                     break;
                 case "delete":
                     itemCode = request.getParameter("code");
-                    Command deleteCommand = new DeleteItemCommand(itemDAO, view);
+                    DeleteItemCommand deleteCommand = new DeleteItemCommand(itemDAO, view);
+                    deleteCommand.setItemCode(itemCode);
                     deleteCommand.execute();
                     response.sendRedirect("item-management");
                     break;
@@ -97,7 +98,8 @@ public class ItemServlet extends HttpServlet {
                 discount = Double.parseDouble(request.getParameter("discount"));
                 
                 Item updatedItem = new Item(0, itemCode, itemName, price, discount);
-                Command editCommand = new EditItemCommand(itemDAO, view);
+                EditItemCommand editCommand = new EditItemCommand(itemDAO, view);
+                editCommand.setItem(updatedItem);
                 editCommand.execute();
                 response.sendRedirect("item-management");
                 break;

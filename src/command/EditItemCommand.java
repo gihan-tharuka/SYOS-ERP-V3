@@ -7,18 +7,20 @@ import view.ItemManagementView;
 public class EditItemCommand implements Command {
     private ItemDAO itemDAO;
     private ItemManagementView view;
+    private Item item;
 
     public EditItemCommand(ItemDAO itemDAO, ItemManagementView view) {
         this.itemDAO = itemDAO;
         this.view = view;
     }
 
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
     @Override
     public void execute() {
-        String itemCode = view.getItemCodeToEdit();
-        Item item = itemDAO.getItemByCode(itemCode);
         if (item != null) {
-            item = view.getUpdatedItemDetails(item);
             itemDAO.updateItem(item);
             view.showEditItemSuccess();
         } else {
