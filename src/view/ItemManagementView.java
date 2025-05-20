@@ -54,14 +54,13 @@ public class ItemManagementView {
 
 
     public void showAddItemSuccess() {
-        System.out.println("New item added successfully.");
+        // This method is kept for compatibility but doesn't need to do anything
+        // since we're using web responses instead of console output
     }
 
     public void displayAllItems(List<Item> items) {
-        System.out.println("List of all items:");
-        for (Item item : items) {
-            System.out.println("Item Code: " + item.getItemCode() + ", Item Name: " + item.getItemName() + ", Price: " + item.getPrice() + ", Discount: " + item.getDiscount());
-        }
+        // This method is kept for compatibility but doesn't need to do anything
+        // since we're using web responses instead of console output
     }
 
     public String getItemCodeToDelete() {
@@ -71,7 +70,8 @@ public class ItemManagementView {
     }
 
     public void showDeleteItemSuccess() {
-        System.out.println("Item deleted successfully.");
+        // This method is kept for compatibility but doesn't need to do anything
+        // since we're using web responses instead of console output
     }
 
     public String getItemCodeToEdit() {
@@ -108,10 +108,12 @@ public Item getUpdatedItemDetails(Item item) {
 }
 
     public void showEditItemSuccess() {
-        System.out.println("Item updated successfully.");
+        // This method is kept for compatibility but doesn't need to do anything
+        // since we're using web responses instead of console output
     }
 
     public void showItemNotFound() {
-        System.out.println("Item not found.");
+        // This method is kept for compatibility but doesn't need to do anything
+        // since we're using web responses instead of console output
     }
 }

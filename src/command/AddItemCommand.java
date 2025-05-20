@@ -4,24 +4,26 @@ import dao.ItemDAO;
 import model.Item;
 import view.ItemManagementView;
 
-import java.util.Scanner;
-
 public class AddItemCommand implements Command {
     private ItemDAO itemDAO;
-    //private Scanner scanner = new Scanner(System.in);
     private ItemManagementView view;
+    private Item item;
 
     public AddItemCommand(ItemDAO itemDAO, ItemManagementView view) {
         this.itemDAO = itemDAO;
         this.view = view;
     }
 
-    @Override
+    public void setItem(Item item) {
+        this.item = item;
+    }
 
+    @Override
     public void execute() {
-        Item item = view.getNewItemDetails();
-        itemDAO.addItem(item);
-        view.showAddItemSuccess();
+        if (item != null) {
+            itemDAO.addItem(item);
+            view.showAddItemSuccess();
+        }
     }
 }
 

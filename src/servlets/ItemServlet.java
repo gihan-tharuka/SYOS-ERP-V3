@@ -84,7 +84,8 @@ public class ItemServlet extends HttpServlet {
                 double discount = Double.parseDouble(request.getParameter("discount"));
                 
                 Item newItem = new Item(0, itemCode, itemName, price, discount);
-                Command addCommand = new AddItemCommand(itemDAO, view);
+                AddItemCommand addCommand = new AddItemCommand(itemDAO, view);
+                addCommand.setItem(newItem);
                 addCommand.execute();
                 response.sendRedirect("item-management");
                 break;
