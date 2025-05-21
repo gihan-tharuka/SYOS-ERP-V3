@@ -25,15 +25,19 @@ public class ConnectionPool {
         this.usedConnections = new ArrayList<>();
     }
     
-    public static ConnectionPool create(String url, String username, String password) throws SQLException {
+    public static ConnectionPool create(String url, String username, String password) {
         ConnectionPool pool = new ConnectionPool(url, username, password);
         pool.initializePool();
         return pool;
     }
     
-    private void initializePool() throws SQLException {
+    private void initializePool() {
         for (int i = 0; i < INITIAL_POOL_SIZE; i++) {
-            connectionPool.add(createConnection());
+            try {
+                connectionPool.add(createConnection());
+            } catch (SQLException e) {
+                System.out.println("Error creating initial connection: " + e.getMessage());
+            }
         }
     }
     
@@ -52,7 +56,11 @@ public class ConnectionPool {
         
         Connection connection = connectionPool.remove(connectionPool.size() - 1);
         
-        if (!connection.isValid(MAX_TIMEOUT)) {
+        try {
+            if (!connection.isValid(MAX_TIMEOUT)) {
+                connection = createConnection();
+            }
+        } catch (SQLException e) {
             connection = createConnection();
         }
         
@@ -61,16 +69,27 @@ public class ConnectionPool {
     }
     
     public synchronized boolean releaseConnection(Connection connection) {
-        connectionPool.add(connection);
-        return usedConnections.remove(connection);
+        if (connection != null) {
+            connectionPool.add(connection);
+            return usedConnections.remove(connection);
+        }
+        return false;
     }
     
     public synchronized void shutdown() throws SQLException {
         for (Connection connection : usedConnections) {
-            connection.close();
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                System.out.println("Error closing connection: " + e.getMessage());
+            }
         }
         for (Connection connection : connectionPool) {
-            connection.close();
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                System.out.println("Error closing connection: " + e.getMessage());
+            }
         }
         usedConnections.clear();
         connectionPool.clear();

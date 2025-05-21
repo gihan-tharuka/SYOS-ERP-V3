@@ -3,7 +3,6 @@ package dao;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 
 public class DatabaseConnection {
     private static DatabaseConnection instance;
@@ -21,8 +20,8 @@ public class DatabaseConnection {
             System.out.println("Database Connection Pool Created Successfully!");
         } catch (ClassNotFoundException e) {
             System.out.println("MySQL JDBC Driver not found. Include it in your library path.");
-        } catch (SQLException e) {
-            handleSQLException(e);
+        } catch (Exception e) {
+            System.out.println("Error initializing connection pool: " + e.getMessage());
         }
     }
 
@@ -33,19 +32,18 @@ public class DatabaseConnection {
         return instance;
     }
 
-    public Connection getConnection() throws SQLException {
-        return connectionPool.getConnection();
+    public Connection getConnection() {
+        try {
+            return connectionPool.getConnection();
+        } catch (SQLException e) {
+            System.out.println("Error getting connection: " + e.getMessage());
+            return null;
+        }
     }
 
     public void releaseConnection(Connection connection) {
-        connectionPool.releaseConnection(connection);
-    }
-
-    private void handleSQLException(SQLException e) {
-        if (e instanceof CommunicationsException) {
-            System.out.println("Error: Unable to connect to the database. Please ensure the database server is running and try again.");
-        } else {
-            System.out.println("SQL Error: " + e.getMessage());
+        if (connection != null) {
+            connectionPool.releaseConnection(connection);
         }
     }
 
@@ -58,9 +56,13 @@ public class DatabaseConnection {
         }
     }
 
-    public void shutdown() throws SQLException {
-        if (connectionPool != null) {
-            connectionPool.shutdown();
+    public void shutdown() {
+        try {
+            if (connectionPool != null) {
+                connectionPool.shutdown();
+            }
+        } catch (SQLException e) {
+            System.out.println("Error shutting down connection pool: " + e.getMessage());
         }
     }
 }
