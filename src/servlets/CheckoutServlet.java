@@ -10,11 +10,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
 
 @WebServlet("/checkout")
 public class CheckoutServlet extends HttpServlet {
+    private DatabaseConnection dbConnection;
     private SaleDAO saleDAO;
     private BillDAO billDAO;
     private BillItemDAO billItemDAO;
@@ -22,11 +24,21 @@ public class CheckoutServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
-        saleDAO = new SaleDAO(dbConnection.getConnection());
-        billDAO = new BillDAO(dbConnection.getConnection());
-        billItemDAO = new BillItemDAO(dbConnection.getConnection());
-        webStockDAO = new WebStockDAO(dbConnection.getConnection());
+        dbConnection = DatabaseConnection.getInstance();
+        Connection connection = null;
+        try {
+            connection = dbConnection.getConnection();
+            saleDAO = new SaleDAO(connection);
+            billDAO = new BillDAO(connection);
+            billItemDAO = new BillItemDAO(connection);
+            webStockDAO = new WebStockDAO(connection);
+        } catch (Exception e) {
+            throw new ServletException("Error initializing CheckoutServlet", e);
+        } finally {
+            if (connection != null) {
+                dbConnection.releaseConnection(connection);
+            }
+        }
     }
 
     @Override
@@ -40,7 +52,10 @@ public class CheckoutServlet extends HttpServlet {
             return;
         }
 
+        Connection connection = null;
         try {
+            connection = dbConnection.getConnection();
+            
             // Create Sale record
             Sale sale = new Sale();
             sale.setSaleDate(new Date());
@@ -93,6 +108,19 @@ public class CheckoutServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("error", "Error processing checkout: " + e.getMessage());
             request.getRequestDispatcher("/jsp/webstore/cart.jsp").forward(request, response);
+        } finally {
+            if (connection != null) {
+                dbConnection.releaseConnection(connection);
+            }
+        }
+    }
+
+    @Override
+    public void destroy() {
+        try {
+            dbConnection.shutdown();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 } 

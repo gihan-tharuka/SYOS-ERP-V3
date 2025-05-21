@@ -1,6 +1,7 @@
 package servlets;
 
 import model.CartItem;
+import dao.DatabaseConnection;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,10 +10,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.List;
 
 @WebServlet("/cart")
 public class CartServlet extends HttpServlet {
+    private DatabaseConnection dbConnection;
+    
+    @Override
+    public void init() throws ServletException {
+        dbConnection = DatabaseConnection.getInstance();
+    }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -49,6 +57,15 @@ public class CartServlet extends HttpServlet {
             }
             
             response.sendRedirect(request.getContextPath() + "/cart");
+        }
+    }
+
+    @Override
+    public void destroy() {
+        try {
+            dbConnection.shutdown();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 } 
