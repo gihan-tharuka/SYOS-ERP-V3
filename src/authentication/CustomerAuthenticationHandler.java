@@ -20,6 +20,12 @@ public class CustomerAuthenticationHandler extends AuthenticationHandler {
             }
             return "Invalid username or password";
         }
-        return super.handleRequest(username, password, role);
+        
+        // If this handler can't handle the request, pass it to the next handler
+        if (nextHandler != null) {
+            return nextHandler.handleRequest(username, password, role);
+        }
+        
+        return "Invalid role";
     }
 }
