@@ -35,10 +35,11 @@
                 <div class="col-md-4">
                     <div class="card item-card">
                         <div class="card-body">
-                            <h5 class="card-title">${entry.key.itemName}</h5>
+                            <h5 class="card-title">${webStockItems[entry.key].itemName}</h5>
                             <p class="card-text">
                                 Available Quantity: ${entry.key.currentQuantity}<br>
-                                Item Code: ${entry.value}
+                                Item Code: ${entry.value}<br>
+                                Price: $${webStockItems[entry.key].price}
                             </p>
                             <form action="${pageContext.request.contextPath}/webstore" method="post">
                                 <input type="hidden" name="action" value="addToCart">

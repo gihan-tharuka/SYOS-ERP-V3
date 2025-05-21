@@ -7,14 +7,15 @@ import model.CartItem;
 import model.Item;
 import model.WebStock;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +35,18 @@ public class WebStoreServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         Map<WebStock, String> webStocks = webStockDAO.getAllWebStocksWithItemCodes();
+        Map<WebStock, Item> webStockItems = new HashMap<>();
+        
+        // Get item details for each web stock
+        for (Map.Entry<WebStock, String> entry : webStocks.entrySet()) {
+            Item item = itemDAO.getItemByCode(entry.getValue());
+            if (item != null) {
+                webStockItems.put(entry.getKey(), item);
+            }
+        }
+        
         request.setAttribute("webStocks", webStocks);
+        request.setAttribute("webStockItems", webStockItems);
         request.getRequestDispatcher("/jsp/webstore/webstore.jsp").forward(request, response);
     }
 
@@ -44,12 +56,37 @@ public class WebStoreServlet extends HttpServlet {
         String action = request.getParameter("action");
         
         if ("addToCart".equals(action)) {
-            int itemId = Integer.parseInt(request.getParameter("itemId"));
-            int quantity = Integer.parseInt(request.getParameter("quantity"));
-            
-            WebStock webStock = webStockDAO.getWebStockByItemId(itemId);
-            if (webStock != null && quantity <= webStock.getCurrentQuantity()) {
-                Item item = itemDAO.getItemByCode(webStockDAO.getAllWebStocksWithItemCodes().get(webStock));
+            try {
+                int itemId = Integer.parseInt(request.getParameter("itemId"));
+                int quantity = Integer.parseInt(request.getParameter("quantity"));
+                
+                WebStock webStock = webStockDAO.getWebStockByItemId(itemId);
+                if (webStock == null) {
+                    request.setAttribute("error", "Item not found");
+                    doGet(request, response);
+                    return;
+                }
+
+                // Get item code directly from the database
+                String itemCode = itemDAO.getItemCodeById(itemId);
+                if (itemCode == null) {
+                    request.setAttribute("error", "Item code not found");
+                    doGet(request, response);
+                    return;
+                }
+
+                Item item = itemDAO.getItemByCode(itemCode);
+                if (item == null) {
+                    request.setAttribute("error", "Item details not found");
+                    doGet(request, response);
+                    return;
+                }
+
+                if (quantity <= 0 || quantity > webStock.getCurrentQuantity()) {
+                    request.setAttribute("error", "Invalid quantity");
+                    doGet(request, response);
+                    return;
+                }
                 
                 HttpSession session = request.getSession();
                 List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
@@ -62,8 +99,11 @@ public class WebStoreServlet extends HttpServlet {
                 cart.add(cartItem);
                 
                 response.sendRedirect(request.getContextPath() + "/webstore");
-            } else {
-                request.setAttribute("error", "Invalid quantity or item not available");
+            } catch (NumberFormatException e) {
+                request.setAttribute("error", "Invalid input");
+                doGet(request, response);
+            } catch (Exception e) {
+                request.setAttribute("error", "An error occurred: " + e.getMessage());
                 doGet(request, response);
             }
         }
