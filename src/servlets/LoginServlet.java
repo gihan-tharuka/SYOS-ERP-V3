@@ -19,6 +19,7 @@ public class LoginServlet extends HttpServlet {
     private UserDAO userDAO;
     private AdminAuthenticationHandler adminHandler;
     private CashierAuthenticationHandler cashierHandler;
+    private CustomerAuthenticationHandler customerHandler;
 
     @Override
     public void init() throws ServletException {
@@ -27,7 +28,11 @@ public class LoginServlet extends HttpServlet {
         userDAO = new UserDAO(connection);
         adminHandler = new AdminAuthenticationHandler(userDAO);
         cashierHandler = new CashierAuthenticationHandler(userDAO);
+        customerHandler = new CustomerAuthenticationHandler(userDAO);
+        
+        // Set up the chain of responsibility
         adminHandler.setNextHandler(cashierHandler);
+        cashierHandler.setNextHandler(customerHandler);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -49,6 +54,8 @@ public class LoginServlet extends HttpServlet {
                 response.sendRedirect("admin/dashboard.jsp");
             } else if (role.equalsIgnoreCase("cashier")) {
                 response.sendRedirect("cashier/dashboard.jsp");
+            } else if (role.equalsIgnoreCase("customer")) {
+                response.sendRedirect("jsp/customer/dashboard.jsp");
             }
         } else {
             // Set error message and redirect back to login

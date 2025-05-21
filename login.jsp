@@ -39,6 +39,7 @@
                     <option value="" disabled selected>Select Role</option>
                     <option value="admin">Admin</option>
                     <option value="cashier">Cashier</option>
+                    <option value="customer">Customer</option>
                 </select>
             </div>
 
