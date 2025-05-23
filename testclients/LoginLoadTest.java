@@ -1,3 +1,5 @@
+package testclients;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -77,14 +79,12 @@ public class LoginLoadTest {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         long endTime = System.currentTimeMillis();
         
-        // Print results
-        System.out.printf("Request %d completed in %d ms with status %d%n", 
-                requestId, (endTime - startTime), response.statusCode());
+        // Print only essential information
+        System.out.printf("Request %d - Status: %d, Time: %d ms%n", 
+                requestId, response.statusCode(), (endTime - startTime));
         
         if (response.statusCode() == 302) {
             System.out.println("Request " + requestId + " was redirected to: " + response.headers().firstValue("Location").orElse("unknown"));
-        } else {
-            System.out.println("Request " + requestId + " response: " + response.body());
         }
     }
 } 
