@@ -6,6 +6,51 @@
     <meta charset="UTF-8">
     <title>Web Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Store initial quantities
+        let initialQuantities = {};
+        
+        // Function to update quantities on the page
+        function updateQuantities(newQuantities) {
+            Object.entries(newQuantities).forEach(([itemId, quantity]) => {
+                const quantityElement = document.querySelector(`[data-item-id="${itemId}"] .quantity-display`);
+                const quantityInput = document.querySelector(`[data-item-id="${itemId}"] input[name="quantity"]`);
+                
+                if (quantityElement && quantityInput) {
+                    quantityElement.textContent = quantity;
+                    quantityInput.max = quantity;
+                    
+                    // If current input value is greater than new max, adjust it
+                    if (parseInt(quantityInput.value) > quantity) {
+                        quantityInput.value = quantity;
+                    }
+                }
+            });
+        }
+
+        // Function to poll for updates
+        function pollForUpdates() {
+            fetch('${pageContext.request.contextPath}/webstock/updates')
+                .then(response => response.json())
+                .then(data => {
+                    updateQuantities(data);
+                })
+                .catch(error => console.error('Error fetching updates:', error));
+        }
+
+        // Start polling when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Store initial quantities
+            document.querySelectorAll('[data-item-id]').forEach(element => {
+                const itemId = element.getAttribute('data-item-id');
+                const quantity = element.querySelector('.quantity-display').textContent;
+                initialQuantities[itemId] = parseInt(quantity);
+            });
+
+            // Poll every 5 seconds
+            setInterval(pollForUpdates, 5000);
+        });
+    </script>
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen flex flex-col">
@@ -36,11 +81,11 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <c:forEach items="${webStocks}" var="entry">
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden" data-item-id="${entry.key.itemId}">
                         <div class="p-6">
                             <h5 class="text-xl font-semibold text-gray-800 mb-4">${webStockItems[entry.key].itemName}</h5>
                             <div class="space-y-2 text-gray-600 mb-4">
-                                <p>Available Quantity: ${entry.key.currentQuantity}</p>
+                                <p>Available Quantity: <span class="quantity-display">${entry.key.currentQuantity}</span></p>
                                 <p>Item Code: ${entry.value}</p>
                                 <p class="text-indigo-600 font-semibold">Rs. ${webStockItems[entry.key].price}</p>
                             </div>
