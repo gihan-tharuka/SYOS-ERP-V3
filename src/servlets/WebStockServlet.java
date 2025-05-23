@@ -7,6 +7,7 @@ import dao.MainStockDAO;
 import dao.ReorderLevelDAO;
 import dao.WebStockDAO;
 import model.BatchSelection;
+import model.Item;
 import model.WebStock;
 import observer.ReorderSubject;
 
@@ -105,6 +106,8 @@ public class WebStockServlet extends HttpServlet {
 
     private void showAddForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        List<Item> items = controller.getItemDAO().getAllItems();
+        request.setAttribute("items", items);
         request.getRequestDispatcher("/jsp/webstock/add.jsp").forward(request, response);
     }
 

@@ -14,9 +14,14 @@
             <div class="container mx-auto px-6 py-4">
                 <div class="flex justify-between items-center">
                     <h1 class="text-2xl font-bold">Web Store</h1>
-                    <a href="${pageContext.request.contextPath}/cart" class="bg-white text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-md font-medium transition duration-200">
-                        View Cart
-                    </a>
+                    <div class="flex items-center space-x-4">
+                        <a href="${pageContext.request.contextPath}/jsp/customer/dashboard.jsp" class="bg-white text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-md font-medium transition duration-200">
+                            Dashboard
+                        </a>
+                        <a href="${pageContext.request.contextPath}/cart" class="bg-white text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-md font-medium transition duration-200">
+                            View Cart
+                        </a>
+                    </div>
                 </div>
             </div>
         </header>

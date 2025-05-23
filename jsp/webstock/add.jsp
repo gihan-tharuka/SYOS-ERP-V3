@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,8 +17,13 @@
 
         <form action="${pageContext.request.contextPath}/webstock/add" method="post" class="mt-4">
             <div class="mb-3">
-                <label for="itemCode" class="form-label">Item Code:</label>
-                <input type="text" class="form-control" id="itemCode" name="itemCode" required>
+                <label for="itemCode" class="form-label">Select Item:</label>
+                <select class="form-select" id="itemCode" name="itemCode" required>
+                    <option value="">Select an item...</option>
+                    <c:forEach items="${items}" var="item">
+                        <option value="${item.itemCode}">${item.itemCode} - ${item.itemName}</option>
+                    </c:forEach>
+                </select>
             </div>
             
             <div class="mb-3">
