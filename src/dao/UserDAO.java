@@ -13,7 +13,15 @@ import java.util.List;
 public class UserDAO {
     private Connection connection;
 
+    public UserDAO() {
+        // No-args constructor
+    }
+
     public UserDAO(Connection connection) {
+        this.connection = connection;
+    }
+
+    public void setConnection(Connection connection) {
         this.connection = connection;
     }
 

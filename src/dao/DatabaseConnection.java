@@ -36,6 +36,20 @@ public class DatabaseConnection {
         connectionPool.releaseConnection(connection);
     }
 
+    public boolean isConnectionValid() {
+        try {
+            Connection conn = getConnection();
+            boolean isValid = conn != null && !conn.isClosed();
+            if (isValid) {
+                releaseConnection(conn);
+            }
+            return isValid;
+        } catch (SQLException e) {
+            handleSQLException(e);
+            return false;
+        }
+    }
+
     public void handleSQLException(SQLException e) {
         if (e instanceof CommunicationsException) {
             System.out.println("Error: Unable to connect to the database. Please ensure the database server is running.");

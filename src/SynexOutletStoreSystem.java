@@ -9,6 +9,7 @@ import strategy.MultipleBatchesStrategy;
 import view.*;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 public class SynexOutletStoreSystem {
     public void startApp(Connection connection) {
@@ -77,10 +78,15 @@ public class SynexOutletStoreSystem {
 
     private ReorderSubject initializeReorderSubject() {
         ReorderSubject reorderSubject = new ReorderSubject();
-        Connection connection = DatabaseConnection.getInstance().getConnection();
-        ReorderLevelDAO reorderLevelDAO = new ReorderLevelDAO(connection);
-        ReorderObserver reorderObserver = new ReorderObserver(reorderLevelDAO);
-        reorderSubject.addObserver(reorderObserver);
+        try {
+            Connection connection = DatabaseConnection.getInstance().getConnection();
+            ReorderLevelDAO reorderLevelDAO = new ReorderLevelDAO(connection);
+            ReorderObserver reorderObserver = new ReorderObserver(reorderLevelDAO);
+            reorderSubject.addObserver(reorderObserver);
+        } catch (SQLException e) {
+            System.err.println("Error initializing reorder subject: " + e.getMessage());
+            e.printStackTrace();
+        }
         return reorderSubject;
     }
 }
