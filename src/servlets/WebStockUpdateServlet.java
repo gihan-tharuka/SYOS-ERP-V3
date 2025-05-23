@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
-import org.json.JSONObject;
+import java.util.StringJoiner;
 
 @WebServlet("/webstock/updates")
 public class WebStockUpdateServlet extends HttpServlet {
@@ -41,17 +41,25 @@ public class WebStockUpdateServlet extends HttpServlet {
                 stockUpdates.put(stock.getItemId(), stock.getCurrentQuantity());
             }
 
-            // Convert to JSON
-            JSONObject jsonResponse = new JSONObject(stockUpdates);
+            // Convert to JSON manually with proper formatting
+            StringBuilder jsonBuilder = new StringBuilder();
+            jsonBuilder.append("{");
+            boolean first = true;
+            for (Map.Entry<Integer, Integer> entry : stockUpdates.entrySet()) {
+                if (!first) {
+                    jsonBuilder.append(",");
+                }
+                jsonBuilder.append("\"").append(entry.getKey()).append("\":").append(entry.getValue());
+                first = false;
+            }
+            jsonBuilder.append("}");
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-            response.getWriter().write(jsonResponse.toString());
+            response.getWriter().write(jsonBuilder.toString());
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            JSONObject errorJson = new JSONObject();
-            errorJson.put("error", e.getMessage());
-            response.getWriter().write(errorJson.toString());
+            response.getWriter().write("{\"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
         }
     }
 } 

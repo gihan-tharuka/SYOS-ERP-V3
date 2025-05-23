@@ -12,17 +12,40 @@
         
         // Function to update quantities on the page
         function updateQuantities(newQuantities) {
+            console.log('Received new quantities:', newQuantities);
+            
             Object.entries(newQuantities).forEach(([itemId, quantity]) => {
-                const quantityElement = document.querySelector(`[data-item-id="${itemId}"] .quantity-display`);
-                const quantityInput = document.querySelector(`[data-item-id="${itemId}"] input[name="quantity"]`);
+                const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
+                if (!itemElement) {
+                    console.log(`Item element not found for ID: ${itemId}`);
+                    return;
+                }
+
+                const quantityElement = itemElement.querySelector('.quantity-display');
+                const quantityInput = itemElement.querySelector('input[name="quantity"]');
+                
+                console.log(`Updating item ${itemId}:`, {
+                    currentDisplay: quantityElement?.textContent,
+                    newQuantity: quantity,
+                    foundElements: {
+                        quantityElement: !!quantityElement,
+                        quantityInput: !!quantityInput
+                    }
+                });
                 
                 if (quantityElement && quantityInput) {
-                    quantityElement.textContent = quantity;
-                    quantityInput.max = quantity;
+                    const oldQuantity = parseInt(quantityElement.textContent);
+                    const newQuantity = parseInt(quantity);
                     
-                    // If current input value is greater than new max, adjust it
-                    if (parseInt(quantityInput.value) > quantity) {
-                        quantityInput.value = quantity;
+                    if (oldQuantity !== newQuantity) {
+                        console.log(`Quantity changed for item ${itemId}: ${oldQuantity} -> ${newQuantity}`);
+                        quantityElement.textContent = newQuantity;
+                        quantityInput.max = newQuantity;
+                        
+                        // If current input value is greater than new max, adjust it
+                        if (parseInt(quantityInput.value) > newQuantity) {
+                            quantityInput.value = newQuantity;
+                        }
                     }
                 }
             });
@@ -30,25 +53,43 @@
 
         // Function to poll for updates
         function pollForUpdates() {
+            console.log('Polling for updates...');
             fetch('${pageContext.request.contextPath}/webstock/updates')
-                .then(response => response.json())
-                .then(data => {
-                    updateQuantities(data);
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
                 })
-                .catch(error => console.error('Error fetching updates:', error));
+                .then(data => {
+                    console.log('Received data:', data);
+                    if (data && typeof data === 'object') {
+                        updateQuantities(data);
+                    } else {
+                        console.error('Invalid data format received:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching updates:', error);
+                });
         }
 
         // Start polling when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, initializing polling...');
+            
             // Store initial quantities
             document.querySelectorAll('[data-item-id]').forEach(element => {
                 const itemId = element.getAttribute('data-item-id');
                 const quantity = element.querySelector('.quantity-display').textContent;
                 initialQuantities[itemId] = parseInt(quantity);
+                console.log(`Stored initial quantity for item ${itemId}:`, quantity);
             });
 
-            // Poll every 5 seconds
-            setInterval(pollForUpdates, 5000);
+            // Poll immediately and then every second
+            pollForUpdates();
+            setInterval(pollForUpdates, 1000);
         });
     </script>
 </head>
