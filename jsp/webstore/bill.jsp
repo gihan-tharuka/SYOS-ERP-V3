@@ -6,29 +6,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Bill</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .bill-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .bill-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .bill-details {
-            margin-bottom: 20px;
-        }
-        .bill-items {
-            margin-bottom: 20px;
-        }
-        .bill-total {
-            text-align: right;
-            font-weight: bold;
-        }
         @media print {
             .no-print {
                 display: none;
@@ -36,55 +15,80 @@
         }
     </style>
 </head>
-<body>
-    <div class="container mt-4">
-        <div class="bill-container">
-            <div class="bill-header">
-                <h2>Bill</h2>
-                <p>Serial Number: ${bill.serialNumber}</p>
-                <p>Date: <fmt:formatDate value="${bill.billDate}" pattern="yyyy-MM-dd HH:mm:ss"/></p>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-indigo-600 text-white shadow-md">
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold">Bill</h1>
+                    <div class="no-print">
+                        <button onclick="window.print()" class="bg-white text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-md font-medium transition duration-200">
+                            Print Bill
+                        </button>
+                    </div>
+                </div>
             </div>
+        </header>
 
-            <div class="bill-details">
-                <p><strong>Payment Method:</strong> ${bill.paymentMethod}</p>
-            </div>
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-6 py-8">
+            <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Bill</h2>
+                        <p class="text-gray-600">Serial Number: ${bill.serialNumber}</p>
+                        <p class="text-gray-600">Date: <fmt:formatDate value="${bill.billDate}" pattern="yyyy-MM-dd HH:mm:ss"/></p>
+                    </div>
 
-            <div class="bill-items">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Item Name</th>
-                            <th>Quantity</th>
-                            <th>Price</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:forEach items="${billItems}" var="item">
-                            <tr>
-                                <td>${item.itemName}</td>
-                                <td>${item.quantity}</td>
-                                <td>$${item.price}</td>
-                                <td>$${item.totalPrice}</td>
-                            </tr>
-                        </c:forEach>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
-                            <td><strong>$${bill.totalPrice}</strong></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+                    <div class="mb-6">
+                        <p class="text-gray-700"><span class="font-medium">Payment Method:</span> ${bill.paymentMethod}</p>
+                    </div>
 
-            <div class="text-center mt-4 no-print">
-                <button onclick="window.print()" class="btn btn-primary">Print Bill</button>
-                <a href="${pageContext.request.contextPath}/webstore" class="btn btn-secondary">Back to Store</a>
+                    <div class="mb-8">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <c:forEach items="${billItems}" var="item">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.itemName}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.quantity}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs. ${item.price}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs. ${item.totalPrice}</td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                            <tfoot class="bg-gray-50">
+                                <tr>
+                                    <td colspan="3" class="px-6 py-4 text-right text-sm font-medium text-gray-900">Total Amount:</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rs. ${bill.totalPrice}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="text-center no-print">
+                        <a href="${pageContext.request.contextPath}/webstore" class="inline-block bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-md font-medium transition duration-200">
+                            Back to Store
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-100 border-t py-4">
+            <div class="container mx-auto px-6 text-center text-gray-500 text-sm">
+                &copy; 2023 SYOS ERP System. All rights reserved.
+            </div>
+        </footer>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 
