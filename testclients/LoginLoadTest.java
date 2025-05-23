@@ -63,15 +63,8 @@ public class LoginLoadTest {
         int responseCode = conn.getResponseCode();
         long endTime = System.currentTimeMillis();
         
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            
-            logger.info(String.format("Client %d (%s) - Response Code: %d, Time: %dms, Response: %s",
-                    clientId, role, responseCode, (endTime - startTime), response.toString()));
-        }
+        // Only log essential information
+        logger.info(String.format("Client %d (%s) - Response Code: %d, Time: %dms",
+                clientId, role, responseCode, (endTime - startTime)));
     }
 }
