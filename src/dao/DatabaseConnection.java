@@ -1,30 +1,14 @@
 package dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 
 public class DatabaseConnection {
     private static DatabaseConnection instance;
-    private Connection connection;
+    private ConnectionPool connectionPool;
 
     private DatabaseConnection() {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-
-            String url = "jdbc:mysql://localhost:3306/authentication";
-            String username = "root";
-            String password = "";
-
-            connection = DriverManager.getConnection(url, username, password);
-
-            System.out.println("Database Connected Successfully!");
-        } catch (ClassNotFoundException e) {
-            System.out.println("MySQL JDBC Driver not found. Include it in your library path.");
-        } catch (SQLException e) {
-            handleSQLException(e);
-        }
+        connectionPool = ConnectionPool.getInstance();
     }
 
     public static DatabaseConnection getInstance() {
@@ -35,23 +19,26 @@ public class DatabaseConnection {
     }
 
     public Connection getConnection() {
-        return connection;
+        return connectionPool.getConnection();
     }
 
-    private void handleSQLException(SQLException e) {
-        if (e instanceof com.mysql.cj.jdbc.exceptions.CommunicationsException) {
-            System.out.println("Error: Unable to connect to the database. Please ensure the database server is running and try again.");
-        } else {
-            System.out.println("SQL Error: " + e.getMessage());
-        }
+    public void releaseConnection(Connection connection) {
+        connectionPool.releaseConnection(connection);
     }
 
     public boolean isConnectionValid() {
         try {
-            return connection != null && !connection.isClosed();
+            Connection connection = getConnection();
+            boolean isValid = connection != null && !connection.isClosed();
+            releaseConnection(connection);
+            return isValid;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public void closeAllConnections() {
+        connectionPool.closeAllConnections();
     }
 }
