@@ -238,5 +238,25 @@ public class UserDAO {
         }
         return null;
     }
+
+    public Integer getUserIdByUsername(String username) {
+        // Try each user table
+        String[] tables = {"admins", "cashiers", "suppliers", "customers"};
+        String[] idColumns = {"admin_id", "cashier_id", "supplier_id", "customer_id"};
+        
+        for (int i = 0; i < tables.length; i++) {
+            String query = "SELECT " + idColumns[i] + " FROM " + tables[i] + " WHERE username = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, username);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt(idColumns[i]);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
 }
 

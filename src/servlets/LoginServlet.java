@@ -126,6 +126,15 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("username", task.username);
                 session.setAttribute("role", task.role);
                 
+                // Get and set user ID
+                Integer userId = userDAO.getUserIdByUsername(task.username);
+                if (userId != null) {
+                    session.setAttribute("userId", userId);
+                    logger.info("User ID " + userId + " set in session for user: " + task.username);
+                } else {
+                    logger.warning("Could not find user ID for username: " + task.username);
+                }
+                
                 String redirectPath = getRedirectPath(task.role);
                 logger.info("Login successful for user: " + task.username + ", redirecting to: " + redirectPath);
                 response.sendRedirect(redirectPath);
