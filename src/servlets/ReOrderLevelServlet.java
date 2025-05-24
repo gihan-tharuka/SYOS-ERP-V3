@@ -12,6 +12,7 @@ import dao.ReorderLevelDAO;
 import model.ReorderLevel;
 import com.google.gson.Gson;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet("/reorderlevel/*")
 public class ReOrderLevelServlet extends HttpServlet {
@@ -33,7 +34,7 @@ public class ReOrderLevelServlet extends HttpServlet {
         
         if (action == null || action.equals("/")) {
             // List all reorder levels
-            List<ReorderLevel> reorderLevels = reorderLevelDAO.getAllReorderLevels();
+            List<Map<String, Object>> reorderLevels = reorderLevelDAO.getAllReorderLevels();
             request.setAttribute("reorderLevels", reorderLevels);
             request.getRequestDispatcher("/jsp/reorderlevel/list.jsp").forward(request, response);
         } else if (action.equals("/edit")) {
@@ -61,7 +62,10 @@ public class ReOrderLevelServlet extends HttpServlet {
                 int itemId = Integer.parseInt(request.getParameter("itemId"));
                 int thresholdQuantity = Integer.parseInt(request.getParameter("thresholdQuantity"));
                 reorderLevelDAO.addReorderLevel(itemId, thresholdQuantity);
-                broadcastReorderLevelUpdate("add", reorderLevelDAO.getReorderLevelByItemId(itemId));
+                ReorderLevel reorderLevel = reorderLevelDAO.getReorderLevelById(
+                    reorderLevelDAO.getReorderLevelIdByItemId(itemId)
+                );
+                broadcastReorderLevelUpdate("add", reorderLevel);
             } else if ("edit".equals(formAction)) {
                 int reorderLevelId = Integer.parseInt(request.getParameter("reorderLevelId"));
                 int thresholdQuantity = Integer.parseInt(request.getParameter("thresholdQuantity"));

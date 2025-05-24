@@ -5,9 +5,11 @@ import dao.DatabaseConnection;
 import dao.ItemDAO;
 import dao.MainStockDAO;
 import dao.UserDAO;
+import dao.ReorderLevelDAO;
 import factory.StockFactory;
 import model.Item;
 import model.MainStock;
+import model.ReorderLevel;
 import observer.ReorderSubject;
 
 import jakarta.servlet.AsyncContext;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
+import com.google.gson.Gson;
 
 @WebServlet(urlPatterns = "/mainstock/*", asyncSupported = true)
 public class MainStockServlet extends HttpServlet {
@@ -37,7 +40,9 @@ public class MainStockServlet extends HttpServlet {
     private MainStockDAO mainStockDAO;
     private ItemDAO itemDAO;
     private UserDAO userDAO;
+    private ReorderLevelDAO reorderLevelDAO;
     private DatabaseConnection dbConnection;
+    private Gson gson;
     
     // Thread-safe queue to hold stock operations
     private final BlockingQueue<StockOperationTask> operationQueue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
@@ -56,6 +61,8 @@ public class MainStockServlet extends HttpServlet {
             mainStockDAO = new MainStockDAO(connection);
             itemDAO = new ItemDAO(connection, reorderSubject);
             userDAO = new UserDAO(connection);
+            reorderLevelDAO = new ReorderLevelDAO(connection);
+            gson = new Gson();
             controller = new MainStockManagementController(null, mainStockDAO, itemDAO, userDAO);
 
             // Start worker threads to process the queue

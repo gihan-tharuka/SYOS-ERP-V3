@@ -20,19 +20,23 @@ public class ReorderLevelDAO {
 
     public List<Map<String, Object>> getAllReorderLevels() {
         List<Map<String, Object>> reorderLevels = new ArrayList<>();
-        String query = "SELECT rl.*, i.item_code, i.item_name FROM reorder_levels rl " +
-                      "JOIN items i ON rl.item_id = i.item_id";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        String sql = "SELECT rl.*, i.item_code, i.item_name, " +
+                    "(SELECT COALESCE(SUM(quantity), 0) FROM main_stock WHERE item_id = i.item_id) as total_stock " +
+                    "FROM reorder_level rl " +
+                    "JOIN items i ON rl.item_id = i.item_id";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
+            
             while (rs.next()) {
-                Map<String, Object> level = new HashMap<>();
-                level.put("reorderLevelId", rs.getInt("reorder_level_id"));
-                level.put("itemId", rs.getInt("item_id"));
-                level.put("itemCode", rs.getString("item_code"));
-                level.put("itemName", rs.getString("item_name"));
-                level.put("thresholdQuantity", rs.getInt("threshold_quantity"));
-                level.put("totalStock", rs.getInt("total_stock"));
-                reorderLevels.add(level);
+                Map<String, Object> reorderLevel = new HashMap<>();
+                reorderLevel.put("reorderLevelId", rs.getInt("reorder_level_id"));
+                reorderLevel.put("itemId", rs.getInt("item_id"));
+                reorderLevel.put("thresholdQuantity", rs.getInt("threshold_quantity"));
+                reorderLevel.put("itemCode", rs.getString("item_code"));
+                reorderLevel.put("itemName", rs.getString("item_name"));
+                reorderLevel.put("totalStock", rs.getInt("total_stock"));
+                reorderLevels.add(reorderLevel);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -43,7 +47,7 @@ public class ReorderLevelDAO {
     public List<Item> getAvailableItems() {
         List<Item> items = new ArrayList<>();
         String query = "SELECT i.* FROM items i " +
-                      "LEFT JOIN reorder_levels rl ON i.item_id = rl.item_id " +
+                      "LEFT JOIN reorder_level rl ON i.item_id = rl.item_id " +
                       "WHERE rl.item_id IS NULL";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             ResultSet rs = stmt.executeQuery();
@@ -63,7 +67,11 @@ public class ReorderLevelDAO {
     }
 
     public ReorderLevel getReorderLevelById(int reorderLevelId) {
-        String query = "SELECT * FROM reorder_levels WHERE reorder_level_id = ?";
+        String query = "SELECT rl.*, i.item_code, i.item_name, " +
+                      "(SELECT COALESCE(SUM(quantity), 0) FROM main_stock WHERE item_id = i.item_id) as total_stock " +
+                      "FROM reorder_level rl " +
+                      "JOIN items i ON rl.item_id = i.item_id " +
+                      "WHERE rl.reorder_level_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, reorderLevelId);
             ResultSet rs = stmt.executeQuery();
@@ -72,6 +80,8 @@ public class ReorderLevelDAO {
                     rs.getInt("reorder_level_id"),
                     rs.getInt("item_id"),
                     rs.getInt("threshold_quantity"),
+                    rs.getString("item_code"),
+                    rs.getString("item_name"),
                     rs.getInt("total_stock")
                 );
             }
@@ -82,11 +92,10 @@ public class ReorderLevelDAO {
     }
 
     public void addReorderLevel(int itemId, int thresholdQuantity) {
-        String query = "INSERT INTO reorder_levels (item_id, threshold_quantity, total_stock) VALUES (?, ?, ?)";
+        String query = "INSERT INTO reorder_level (item_id, threshold_quantity) VALUES (?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, itemId);
             stmt.setInt(2, thresholdQuantity);
-            stmt.setInt(3, 0); // Default total_stock
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -94,7 +103,7 @@ public class ReorderLevelDAO {
     }
 
     public void updateReorderLevel(int reorderLevelId, int thresholdQuantity) {
-        String query = "UPDATE reorder_levels SET threshold_quantity = ? WHERE reorder_level_id = ?";
+        String query = "UPDATE reorder_level SET threshold_quantity = ? WHERE reorder_level_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, thresholdQuantity);
             stmt.setInt(2, reorderLevelId);
@@ -105,7 +114,7 @@ public class ReorderLevelDAO {
     }
 
     public void deleteReorderLevel(int reorderLevelId) {
-        String query = "DELETE FROM reorder_levels WHERE reorder_level_id = ?";
+        String query = "DELETE FROM reorder_level WHERE reorder_level_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, reorderLevelId);
             stmt.executeUpdate();
@@ -115,7 +124,7 @@ public class ReorderLevelDAO {
     }
 
     public void updateTotalStock(int itemId, int quantity) {
-        String query = "UPDATE reorder_levels SET total_stock = total_stock - ? WHERE item_id = ?";
+        String query = "UPDATE reorder_level SET total_stock = total_stock - ? WHERE item_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, quantity);
             stmt.setInt(2, itemId);
@@ -123,5 +132,48 @@ public class ReorderLevelDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public ReorderLevel getReorderLevelByItemId(int itemId) {
+        String sql = "SELECT rl.*, i.item_code, i.item_name, " +
+                    "(SELECT COALESCE(SUM(quantity), 0) FROM main_stock WHERE item_id = i.item_id) as total_stock " +
+                    "FROM reorder_level rl " +
+                    "JOIN items i ON rl.item_id = i.item_id " +
+                    "WHERE rl.item_id = ?";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, itemId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                ReorderLevel reorderLevel = new ReorderLevel();
+                reorderLevel.setReorderLevelId(rs.getInt("reorder_level_id"));
+                reorderLevel.setItemId(rs.getInt("item_id"));
+                reorderLevel.setThresholdQuantity(rs.getInt("threshold_quantity"));
+                reorderLevel.setItemCode(rs.getString("item_code"));
+                reorderLevel.setItemName(rs.getString("item_name"));
+                reorderLevel.setTotalStock(rs.getInt("total_stock"));
+                return reorderLevel;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public int getReorderLevelIdByItemId(int itemId) {
+        String sql = "SELECT reorder_level_id FROM reorder_level WHERE item_id = ?";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, itemId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt("reorder_level_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 }
