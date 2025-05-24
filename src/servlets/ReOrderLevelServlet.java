@@ -33,10 +33,21 @@ public class ReOrderLevelServlet extends HttpServlet {
         String action = request.getPathInfo();
         
         if (action == null || action.equals("/")) {
-            // List all reorder levels
-            List<Map<String, Object>> reorderLevels = reorderLevelDAO.getAllReorderLevels();
-            request.setAttribute("reorderLevels", reorderLevels);
-            request.getRequestDispatcher("/jsp/reorderlevel/list.jsp").forward(request, response);
+            try {
+                // List all reorder levels
+                List<Map<String, Object>> reorderLevels = reorderLevelDAO.getAllReorderLevels();
+                request.setAttribute("reorderLevels", reorderLevels);
+                
+                // Add debug information
+                if (reorderLevels.isEmpty()) {
+                    request.setAttribute("debug", "Query executed successfully but returned no results");
+                }
+                
+                request.getRequestDispatcher("/jsp/reorderlevel/list.jsp").forward(request, response);
+            } catch (Exception e) {
+                request.setAttribute("error", "Error retrieving reorder levels: " + e.getMessage());
+                request.getRequestDispatcher("/jsp/reorderlevel/list.jsp").forward(request, response);
+            }
         } else if (action.equals("/edit")) {
             // Show edit form
             int reorderLevelId = Integer.parseInt(request.getParameter("id"));

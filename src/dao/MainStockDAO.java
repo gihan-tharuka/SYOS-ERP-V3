@@ -204,5 +204,19 @@ public MainStockDAO(Connection connection) {
         }
     }
 
+    public int getTotalStockForItem(int itemId) {
+        String sql = "SELECT COALESCE(SUM(quantity), 0) as total_stock FROM main_stock WHERE item_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, itemId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total_stock");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
 }
 

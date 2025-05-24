@@ -33,7 +33,8 @@
                 eventSource.close();
                 // Attempt to reconnect after 5 seconds
                 setTimeout(() => {
-                    window.location.reload();
+                    const newEventSource = new EventSource('${pageContext.request.contextPath}/reorderlevel/events');
+                    eventSource = newEventSource;
                 }, 5000);
             });
         });
@@ -71,29 +72,14 @@
         function updateReorderLevelInTable(reorderLevel) {
             const tr = document.getElementById(`reorder-level-${reorderLevel.reorderLevelId}`);
             if (tr) {
-                tr.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.itemCode}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.itemName}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.thresholdQuantity}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.totalStock}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${reorderLevel.totalStock <= reorderLevel.thresholdQuantity ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
-                            ${reorderLevel.totalStock <= reorderLevel.thresholdQuantity ? 'Low Stock' : 'In Stock'}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="${pageContext.request.contextPath}/reorderlevel/edit?id=${reorderLevel.reorderLevelId}" 
-                           class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                        <form action="${pageContext.request.contextPath}/reorderlevel" method="post" class="inline">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="reorderLevelId" value="${reorderLevel.reorderLevelId}">
-                            <button type="submit" class="text-red-600 hover:text-red-900"
-                                    onclick="return confirm('Are you sure you want to delete this reorder level?')">
-                                Delete
-                            </button>
-                        </form>
-                    </td>
-                `;
+                const statusClass = reorderLevel.totalStock <= reorderLevel.thresholdQuantity ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
+                const statusText = reorderLevel.totalStock <= reorderLevel.thresholdQuantity ? 'Low Stock' : 'In Stock';
+                
+                // Update only the cells that need to change
+                tr.querySelector('td:nth-child(4)').textContent = reorderLevel.totalStock;
+                const statusSpan = tr.querySelector('td:nth-child(5) span');
+                statusSpan.className = `px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}`;
+                statusSpan.textContent = statusText;
             }
         }
         
@@ -130,6 +116,28 @@
                                 Add New Reorder Level
                             </a>
                         </div>
+                        
+                        <!-- Debug Information -->
+                        <c:if test="${empty reorderLevels}">
+                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+                                <p>No reorder levels found. This could be because:</p>
+                                <ul class="list-disc list-inside">
+                                    <li>No reorder levels have been created yet</li>
+                                    <li>There was an error retrieving the data</li>
+                                </ul>
+                                <c:if test="${not empty debug}">
+                                    <p class="mt-2 font-semibold">Debug Information:</p>
+                                    <p>${debug}</p>
+                                </c:if>
+                            </div>
+                        </c:if>
+                        
+                        <c:if test="${not empty error}">
+                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                                <p class="font-semibold">Error:</p>
+                                <p>${error}</p>
+                            </div>
+                        </c:if>
                         
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">

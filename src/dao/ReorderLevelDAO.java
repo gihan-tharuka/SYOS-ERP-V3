@@ -21,9 +21,9 @@ public class ReorderLevelDAO {
     public List<Map<String, Object>> getAllReorderLevels() {
         List<Map<String, Object>> reorderLevels = new ArrayList<>();
         String sql = "SELECT rl.*, i.item_code, i.item_name, " +
-                    "(SELECT COALESCE(SUM(quantity), 0) FROM main_stock WHERE item_id = i.item_id) as total_stock " +
-                    "FROM reorder_level rl " +
-                    "JOIN items i ON rl.item_id = i.item_id";
+                    "COALESCE((SELECT SUM(quantity) FROM main_stock WHERE item_id = i.item_id), 0) as total_stock " +
+                    "FROM reorder_levels rl " +
+                    "LEFT JOIN items i ON rl.item_id = i.item_id";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
@@ -40,6 +40,7 @@ public class ReorderLevelDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Error retrieving reorder levels: " + e.getMessage(), e);
         }
         return reorderLevels;
     }
@@ -47,7 +48,7 @@ public class ReorderLevelDAO {
     public List<Item> getAvailableItems() {
         List<Item> items = new ArrayList<>();
         String query = "SELECT i.* FROM items i " +
-                      "LEFT JOIN reorder_level rl ON i.item_id = rl.item_id " +
+                      "LEFT JOIN reorder_levels rl ON i.item_id = rl.item_id " +
                       "WHERE rl.item_id IS NULL";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             ResultSet rs = stmt.executeQuery();
@@ -68,9 +69,9 @@ public class ReorderLevelDAO {
 
     public ReorderLevel getReorderLevelById(int reorderLevelId) {
         String query = "SELECT rl.*, i.item_code, i.item_name, " +
-                      "(SELECT COALESCE(SUM(quantity), 0) FROM main_stock WHERE item_id = i.item_id) as total_stock " +
-                      "FROM reorder_level rl " +
-                      "JOIN items i ON rl.item_id = i.item_id " +
+                      "COALESCE((SELECT SUM(quantity) FROM main_stock WHERE item_id = i.item_id), 0) as total_stock " +
+                      "FROM reorder_levels rl " +
+                      "LEFT JOIN items i ON rl.item_id = i.item_id " +
                       "WHERE rl.reorder_level_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, reorderLevelId);
@@ -92,7 +93,7 @@ public class ReorderLevelDAO {
     }
 
     public void addReorderLevel(int itemId, int thresholdQuantity) {
-        String query = "INSERT INTO reorder_level (item_id, threshold_quantity) VALUES (?, ?)";
+        String query = "INSERT INTO reorder_levels (item_id, threshold_quantity) VALUES (?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, itemId);
             stmt.setInt(2, thresholdQuantity);
@@ -103,7 +104,7 @@ public class ReorderLevelDAO {
     }
 
     public void updateReorderLevel(int reorderLevelId, int thresholdQuantity) {
-        String query = "UPDATE reorder_level SET threshold_quantity = ? WHERE reorder_level_id = ?";
+        String query = "UPDATE reorder_levels SET threshold_quantity = ? WHERE reorder_level_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, thresholdQuantity);
             stmt.setInt(2, reorderLevelId);
@@ -114,7 +115,7 @@ public class ReorderLevelDAO {
     }
 
     public void deleteReorderLevel(int reorderLevelId) {
-        String query = "DELETE FROM reorder_level WHERE reorder_level_id = ?";
+        String query = "DELETE FROM reorder_levels WHERE reorder_level_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, reorderLevelId);
             stmt.executeUpdate();
@@ -124,7 +125,7 @@ public class ReorderLevelDAO {
     }
 
     public void updateTotalStock(int itemId, int quantity) {
-        String query = "UPDATE reorder_level SET total_stock = total_stock - ? WHERE item_id = ?";
+        String query = "UPDATE reorder_levels SET total_stock = total_stock - ? WHERE item_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, quantity);
             stmt.setInt(2, itemId);
@@ -136,9 +137,9 @@ public class ReorderLevelDAO {
 
     public ReorderLevel getReorderLevelByItemId(int itemId) {
         String sql = "SELECT rl.*, i.item_code, i.item_name, " +
-                    "(SELECT COALESCE(SUM(quantity), 0) FROM main_stock WHERE item_id = i.item_id) as total_stock " +
-                    "FROM reorder_level rl " +
-                    "JOIN items i ON rl.item_id = i.item_id " +
+                    "COALESCE((SELECT SUM(quantity) FROM main_stock WHERE item_id = i.item_id), 0) as total_stock " +
+                    "FROM reorder_levels rl " +
+                    "LEFT JOIN items i ON rl.item_id = i.item_id " +
                     "WHERE rl.item_id = ?";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -162,7 +163,7 @@ public class ReorderLevelDAO {
     }
 
     public int getReorderLevelIdByItemId(int itemId) {
-        String sql = "SELECT reorder_level_id FROM reorder_level WHERE item_id = ?";
+        String sql = "SELECT reorder_level_id FROM reorder_levels WHERE item_id = ?";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, itemId);

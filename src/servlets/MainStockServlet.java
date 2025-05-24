@@ -297,6 +297,8 @@ public class MainStockServlet extends HttpServlet {
             // Broadcast stock update
             ReorderLevel reorderLevel = reorderLevelDAO.getReorderLevelByItemId(mainStock.getItemId());
             if (reorderLevel != null) {
+                // Update the total stock before broadcasting
+                reorderLevel.setTotalStock(mainStockDAO.getTotalStockForItem(mainStock.getItemId()));
                 ReorderLevelSSEServlet.broadcastUpdate("update", gson.toJson(reorderLevel));
             }
         } else {
@@ -341,6 +343,8 @@ public class MainStockServlet extends HttpServlet {
             // Broadcast stock update
             ReorderLevel reorderLevel = reorderLevelDAO.getReorderLevelByItemId(mainStock.getItemId());
             if (reorderLevel != null) {
+                // Update the total stock before broadcasting
+                reorderLevel.setTotalStock(mainStockDAO.getTotalStockForItem(mainStock.getItemId()));
                 ReorderLevelSSEServlet.broadcastUpdate("update", gson.toJson(reorderLevel));
             }
         }
@@ -356,6 +360,8 @@ public class MainStockServlet extends HttpServlet {
             // Broadcast stock update
             ReorderLevel reorderLevel = reorderLevelDAO.getReorderLevelByItemId(itemId);
             if (reorderLevel != null) {
+                // Update the total stock before broadcasting
+                reorderLevel.setTotalStock(mainStockDAO.getTotalStockForItem(itemId));
                 ReorderLevelSSEServlet.broadcastUpdate("update", gson.toJson(reorderLevel));
             }
         }
