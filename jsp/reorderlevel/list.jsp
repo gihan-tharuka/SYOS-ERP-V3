@@ -5,6 +5,105 @@
 <head>
     <title>SYOS ERP - Reorder Level Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const eventSource = new EventSource('${pageContext.request.contextPath}/reorderlevel/events');
+            
+            eventSource.addEventListener('connected', function(e) {
+                console.log('SSE Connected. Active clients:', e.data);
+            });
+            
+            eventSource.addEventListener('add', function(e) {
+                const reorderLevel = JSON.parse(e.data);
+                addReorderLevelToTable(reorderLevel);
+            });
+            
+            eventSource.addEventListener('update', function(e) {
+                const reorderLevel = JSON.parse(e.data);
+                updateReorderLevelInTable(reorderLevel);
+            });
+            
+            eventSource.addEventListener('delete', function(e) {
+                const reorderLevel = JSON.parse(e.data);
+                removeReorderLevelFromTable(reorderLevel.reorderLevelId);
+            });
+            
+            eventSource.addEventListener('error', function(e) {
+                console.error('SSE Error:', e);
+                eventSource.close();
+                // Attempt to reconnect after 5 seconds
+                setTimeout(() => {
+                    window.location.reload();
+                }, 5000);
+            });
+        });
+        
+        function addReorderLevelToTable(reorderLevel) {
+            const tbody = document.querySelector('tbody');
+            const tr = document.createElement('tr');
+            tr.id = `reorder-level-${reorderLevel.reorderLevelId}`;
+            tr.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.itemCode}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.itemName}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.thresholdQuantity}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.totalStock}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${reorderLevel.totalStock <= reorderLevel.thresholdQuantity ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                        ${reorderLevel.totalStock <= reorderLevel.thresholdQuantity ? 'Low Stock' : 'In Stock'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <a href="${pageContext.request.contextPath}/reorderlevel/edit?id=${reorderLevel.reorderLevelId}" 
+                       class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                    <form action="${pageContext.request.contextPath}/reorderlevel" method="post" class="inline">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="reorderLevelId" value="${reorderLevel.reorderLevelId}">
+                        <button type="submit" class="text-red-600 hover:text-red-900"
+                                onclick="return confirm('Are you sure you want to delete this reorder level?')">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+        
+        function updateReorderLevelInTable(reorderLevel) {
+            const tr = document.getElementById(`reorder-level-${reorderLevel.reorderLevelId}`);
+            if (tr) {
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.itemCode}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.itemName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.thresholdQuantity}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${reorderLevel.totalStock}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${reorderLevel.totalStock <= reorderLevel.thresholdQuantity ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                            ${reorderLevel.totalStock <= reorderLevel.thresholdQuantity ? 'Low Stock' : 'In Stock'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="${pageContext.request.contextPath}/reorderlevel/edit?id=${reorderLevel.reorderLevelId}" 
+                           class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                        <form action="${pageContext.request.contextPath}/reorderlevel" method="post" class="inline">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="reorderLevelId" value="${reorderLevel.reorderLevelId}">
+                            <button type="submit" class="text-red-600 hover:text-red-900"
+                                    onclick="return confirm('Are you sure you want to delete this reorder level?')">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                `;
+            }
+        }
+        
+        function removeReorderLevelFromTable(reorderLevelId) {
+            const tr = document.getElementById(`reorder-level-${reorderLevelId}`);
+            if (tr) {
+                tr.remove();
+            }
+        }
+    </script>
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen flex flex-col">

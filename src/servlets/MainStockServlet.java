@@ -287,6 +287,11 @@ public class MainStockServlet extends HttpServlet {
 
         if (!mainStockDAO.doesMainStockExist(mainStock.getItemId(), mainStock.getBatchCode())) {
             mainStockDAO.addMainStock(mainStock);
+            // Broadcast stock update
+            ReorderLevel reorderLevel = reorderLevelDAO.getReorderLevelByItemId(mainStock.getItemId());
+            if (reorderLevel != null) {
+                ReorderLevelSSEServlet.broadcastUpdate("update", gson.toJson(reorderLevel));
+            }
         } else {
             throw new Exception("An entry with the same item ID and batch code already exists.");
         }
@@ -325,12 +330,28 @@ public class MainStockServlet extends HttpServlet {
 
             mainStockDAO.editMainStock(mainStock);
             mainStockDAO.adjustTotalStock(mainStock.getItemId(), mainStock.getQuantity() - previousQuantity);
+            
+            // Broadcast stock update
+            ReorderLevel reorderLevel = reorderLevelDAO.getReorderLevelByItemId(mainStock.getItemId());
+            if (reorderLevel != null) {
+                ReorderLevelSSEServlet.broadcastUpdate("update", gson.toJson(reorderLevel));
+            }
         }
     }
 
     private void deleteMainStock(Map<String, String> parameters) throws Exception {
         int stockId = Integer.parseInt(parameters.get("id"));
-        mainStockDAO.deleteMainStock(stockId);
+        MainStock mainStock = mainStockDAO.getMainStockById(stockId);
+        if (mainStock != null) {
+            int itemId = mainStock.getItemId();
+            mainStockDAO.deleteMainStock(stockId);
+            
+            // Broadcast stock update
+            ReorderLevel reorderLevel = reorderLevelDAO.getReorderLevelByItemId(itemId);
+            if (reorderLevel != null) {
+                ReorderLevelSSEServlet.broadcastUpdate("update", gson.toJson(reorderLevel));
+            }
+        }
     }
 
     @Override

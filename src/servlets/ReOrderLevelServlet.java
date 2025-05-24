@@ -10,17 +10,21 @@ import jakarta.servlet.http.HttpServletResponse;
 import dao.DatabaseConnection;
 import dao.ReorderLevelDAO;
 import model.ReorderLevel;
+import com.google.gson.Gson;
+import java.util.List;
 
 @WebServlet("/reorderlevel/*")
 public class ReOrderLevelServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private DatabaseConnection dbConnection;
     private ReorderLevelDAO reorderLevelDAO;
+    private Gson gson;
 
     public void init() {
         dbConnection = DatabaseConnection.getInstance();
         Connection connection = dbConnection.getConnection();
         reorderLevelDAO = new ReorderLevelDAO(connection);
+        gson = new Gson();
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -29,7 +33,8 @@ public class ReOrderLevelServlet extends HttpServlet {
         
         if (action == null || action.equals("/")) {
             // List all reorder levels
-            request.setAttribute("reorderLevels", reorderLevelDAO.getAllReorderLevels());
+            List<ReorderLevel> reorderLevels = reorderLevelDAO.getAllReorderLevels();
+            request.setAttribute("reorderLevels", reorderLevels);
             request.getRequestDispatcher("/jsp/reorderlevel/list.jsp").forward(request, response);
         } else if (action.equals("/edit")) {
             // Show edit form
@@ -56,16 +61,27 @@ public class ReOrderLevelServlet extends HttpServlet {
                 int itemId = Integer.parseInt(request.getParameter("itemId"));
                 int thresholdQuantity = Integer.parseInt(request.getParameter("thresholdQuantity"));
                 reorderLevelDAO.addReorderLevel(itemId, thresholdQuantity);
+                broadcastReorderLevelUpdate("add", reorderLevelDAO.getReorderLevelByItemId(itemId));
             } else if ("edit".equals(formAction)) {
                 int reorderLevelId = Integer.parseInt(request.getParameter("reorderLevelId"));
                 int thresholdQuantity = Integer.parseInt(request.getParameter("thresholdQuantity"));
                 reorderLevelDAO.updateReorderLevel(reorderLevelId, thresholdQuantity);
+                broadcastReorderLevelUpdate("update", reorderLevelDAO.getReorderLevelById(reorderLevelId));
             } else if ("delete".equals(formAction)) {
                 int reorderLevelId = Integer.parseInt(request.getParameter("reorderLevelId"));
+                ReorderLevel reorderLevel = reorderLevelDAO.getReorderLevelById(reorderLevelId);
                 reorderLevelDAO.deleteReorderLevel(reorderLevelId);
+                broadcastReorderLevelUpdate("delete", reorderLevel);
             }
             
             response.sendRedirect(request.getContextPath() + "/reorderlevel");
+        }
+    }
+
+    private void broadcastReorderLevelUpdate(String eventType, ReorderLevel reorderLevel) {
+        if (reorderLevel != null) {
+            String jsonData = gson.toJson(reorderLevel);
+            ReorderLevelSSEServlet.broadcastUpdate(eventType, jsonData);
         }
     }
 
