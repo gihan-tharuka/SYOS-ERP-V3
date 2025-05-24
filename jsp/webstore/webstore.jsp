@@ -15,54 +15,61 @@
         
         // Function to update quantities on the page
         function updateQuantities(newData) {
-            Object.entries(newData).forEach(([itemId, data]) => {
-                const quantityElement = document.querySelector(`[data-item-id="${itemId}"] .quantity-display`);
-                const quantityInput = document.querySelector(`[data-item-id="${itemId}"] input[name="quantity"]`);
-                const addButton = document.querySelector(`[data-item-id="${itemId}"] button[type="submit"]`);
-                
-                if (quantityElement && quantityInput && addButton) {
-                    const newQuantity = data.currentQuantity;
-                    const oldQuantity = parseInt(quantityElement.textContent);
-                    
-                    if (oldQuantity !== newQuantity) {
-                        quantityElement.textContent = newQuantity;
-                        quantityInput.max = newQuantity;
-                        
-                        // If quantity is 0, disable the add button
-                        if (newQuantity === 0) {
-                            addButton.disabled = true;
-                            addButton.classList.add('opacity-50', 'cursor-not-allowed');
-                        } else {
-                            addButton.disabled = false;
-                            addButton.classList.remove('opacity-50', 'cursor-not-allowed');
-                        }
-                        
-                        // If current input value is greater than new quantity, update it
-                        if (parseInt(quantityInput.value) > newQuantity) {
-                            quantityInput.value = newQuantity;
-                        }
-                    }
-                }
-            });
+    Object.entries(newData).forEach(([itemId, data]) => {
+        const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
+        if (!itemElement) {
+            console.error(`Item element not found for ID ${itemId}`);
+            return;
         }
 
-        // Function to poll for updates
-        function pollForUpdates() {
-            if (!isPolling) return;
-
-            fetch('${pageContext.request.contextPath}/api/stock-updates')
-                .then(response => response.json())
-                .then(data => {
-                    updateQuantities(data);
-                })
-                .catch(error => {
-                    console.error('Error fetching updates:', error);
-                })
-                .finally(() => {
-                    // Schedule next poll immediately
-                    pollTimeout = setTimeout(pollForUpdates, pollInterval);
-                });
+        // Update available quantity display
+        const quantityDisplay = itemElement.querySelector('.quantity-display');
+        if (quantityDisplay) {
+            quantityDisplay.textContent = data.currentQuantity;
         }
+
+        // Update quantity input
+        const quantityInput = itemElement.querySelector('input[name="quantity"]');
+        if (quantityInput) {
+            quantityInput.max = data.currentQuantity;
+            if (parseInt(quantityInput.value) > data.currentQuantity) {
+                quantityInput.value = data.currentQuantity;
+            }
+        }
+
+        // Update add button
+        const addButton = itemElement.querySelector('button[type="submit"]');
+        if (addButton) {
+            const isOutOfStock = data.currentQuantity === 0;
+            addButton.disabled = isOutOfStock;
+            addButton.classList.toggle('opacity-50', isOutOfStock);
+            addButton.classList.toggle('cursor-not-allowed', isOutOfStock);
+            addButton.textContent = isOutOfStock ? 'Out of Stock' : 'Add to Cart';
+        }
+    });
+}
+
+function pollForUpdates() {
+    if (!isPolling) return;
+
+    fetch('${pageContext.request.contextPath}/api/stock-updates')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Received stock updates:', data);
+            updateQuantities(data);
+        })
+        .catch(error => {
+            console.error('Error fetching updates:', error);
+        })
+        .finally(() => {
+            pollTimeout = setTimeout(pollForUpdates, pollInterval);
+        });
+}
 
         // Start polling when page loads
         document.addEventListener('DOMContentLoaded', function() {
