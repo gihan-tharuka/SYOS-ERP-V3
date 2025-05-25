@@ -9,7 +9,7 @@
     <script>
         // Store initial quantities for comparison
         let initialQuantities = {};
-        let pollInterval = 500; // Poll every 500ms for instant updates
+        let pollInterval = 3000; // Poll every 500ms for instant updates
         let pollTimeout = null;
         let isPolling = true;
         
