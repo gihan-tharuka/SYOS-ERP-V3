@@ -10,6 +10,7 @@ import model.Item;
 import model.MainStock;
 import observer.ReorderSubject;
 
+import jakarta.servlet.AsyncContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,38 +24,82 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
+import java.util.logging.Logger;
 
-@WebServlet("/mainstock/*")
+@WebServlet(urlPatterns = "/mainstock/*", asyncSupported = true)
 public class MainStockServlet extends HttpServlet {
+    private static final Logger logger = Logger.getLogger(MainStockServlet.class.getName());
+    private static final int THREAD_POOL_SIZE = 5;
+    private static final int QUEUE_CAPACITY = 100;
+    
     private MainStockManagementController controller;
     private MainStockDAO mainStockDAO;
     private ItemDAO itemDAO;
     private UserDAO userDAO;
+    private DatabaseConnection dbConnection;
+    
+    // Thread-safe queue to hold stock operations
+    private final BlockingQueue<StockOperationTask> operationQueue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
+    private final ExecutorService workerThreadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
     @Override
     public void init() throws ServletException {
         try {
-            // Get database connection from singleton
-            Connection connection = DatabaseConnection.getInstance().getConnection();
+            dbConnection = DatabaseConnection.getInstance();
+            Connection connection = dbConnection.getConnection();
             if (connection == null || connection.isClosed()) {
                 throw new ServletException("Database connection is not available");
             }
 
-            // Initialize ReorderSubject (you'll need to implement this)
-            ReorderSubject reorderSubject = new ReorderSubject(); // Create appropriate instance
-
-            // Initialize DAOs
+            ReorderSubject reorderSubject = new ReorderSubject();
             mainStockDAO = new MainStockDAO(connection);
             itemDAO = new ItemDAO(connection, reorderSubject);
             userDAO = new UserDAO(connection);
             controller = new MainStockManagementController(null, mainStockDAO, itemDAO, userDAO);
+
+            // Start worker threads to process the queue
+            for (int i = 0; i < THREAD_POOL_SIZE; i++) {
+                workerThreadPool.submit(this::processOperationQueue);
+            }
+            logger.info("MainStockServlet initialized successfully");
         } catch (Exception e) {
+            logger.severe("Error initializing MainStockServlet: " + e.getMessage());
             throw new ServletException("Failed to initialize MainStockServlet", e);
         }
     }
 
+    // Worker thread: Processes queued stock operations
+    private void processOperationQueue() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                StockOperationTask task = operationQueue.take(); // Blocks if queue is empty
+                handleStockOperation(task);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            } catch (Exception e) {
+                logger.severe("Error processing operation queue: " + e.getMessage());
+            }
+        }
+    }
+
+    // Encapsulates a stock operation request/response pair
+    private static class StockOperationTask {
+        final AsyncContext asyncContext;
+        final String operation;
+        final Map<String, String> parameters;
+
+        StockOperationTask(AsyncContext asyncContext, String operation, Map<String, String> parameters) {
+            this.asyncContext = asyncContext;
+            this.operation = operation;
+            this.parameters = parameters;
+        }
+    }
+
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         String action = request.getPathInfo();
         
         if (action == null) {
@@ -77,25 +122,77 @@ public class MainStockServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = request.getPathInfo();
-        
-        switch (action) {
-            case "/add":
-                addMainStock(request, response);
-                break;
-            case "/edit":
-                editMainStock(request, response);
-                break;
-            case "/delete":
-                deleteMainStock(request, response);
-                break;
-            default:
-                response.sendRedirect(request.getContextPath() + "/mainstock/view");
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            // Start async context
+            AsyncContext asyncContext = request.startAsync();
+            asyncContext.setTimeout(30000); // 30 second timeout
+
+            // Extract parameters
+            Map<String, String> parameters = new HashMap<>();
+            request.getParameterMap().forEach((key, values) -> {
+                if (values != null && values.length > 0) {
+                    parameters.put(key, values[0]);
+                }
+            });
+
+            // Add the operation to the queue
+            String operation = request.getPathInfo();
+            if (operation == null) {
+                operation = "/";
+            }
+            operationQueue.add(new StockOperationTask(asyncContext, operation, parameters));
+            
+            // Send immediate response
+            response.setContentType("text/plain");
+            response.getWriter().write("Stock operation request accepted. Processing...");
+            
+        } catch (Exception e) {
+            logger.severe("Error in doPost: " + e.getMessage());
+            request.setAttribute("error", "An unexpected error occurred: " + e.getMessage());
+            request.getRequestDispatcher("/jsp/mainstock/list.jsp").forward(request, response);
         }
     }
 
-    private void viewAllMainStocks(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    // Actual stock operation logic (called by worker threads)
+    private void handleStockOperation(StockOperationTask task) {
+        try {
+            HttpServletRequest request = (HttpServletRequest) task.asyncContext.getRequest();
+            HttpServletResponse response = (HttpServletResponse) task.asyncContext.getResponse();
+            
+            switch (task.operation) {
+                case "/add":
+                    addMainStock(task.parameters);
+                    break;
+                case "/edit":
+                    editMainStock(task.parameters);
+                    break;
+                case "/delete":
+                    deleteMainStock(task.parameters);
+                    break;
+                default:
+                    logger.warning("Unknown operation: " + task.operation);
+            }
+            
+            response.sendRedirect(request.getContextPath() + "/mainstock/view");
+        } catch (Exception e) {
+            logger.severe("Error handling stock operation: " + e.getMessage());
+            try {
+                HttpServletRequest request = (HttpServletRequest) task.asyncContext.getRequest();
+                HttpServletResponse response = (HttpServletResponse) task.asyncContext.getResponse();
+                request.setAttribute("error", "Internal server error: " + e.getMessage());
+                request.getRequestDispatcher("/jsp/mainstock/list.jsp").forward(request, response);
+            } catch (Exception ex) {
+                logger.severe("Error forwarding to list page: " + ex.getMessage());
+            }
+        } finally {
+            task.asyncContext.complete();
+        }
+    }
+
+    private void viewAllMainStocks(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         try {
             List<MainStock> mainStocks = mainStockDAO.getAllMainStocks();
             List<Map<String, Object>> stockData = new ArrayList<>();
@@ -121,7 +218,8 @@ public class MainStockServlet extends HttpServlet {
         }
     }
 
-    private void showAddForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void showAddForm(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         try {
             request.setAttribute("items", itemDAO.getAllItems());
             request.getRequestDispatcher("/jsp/mainstock/add.jsp").forward(request, response);
@@ -131,7 +229,8 @@ public class MainStockServlet extends HttpServlet {
         }
     }
 
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         try {
             int stockId = Integer.parseInt(request.getParameter("id"));
             MainStock mainStock = mainStockDAO.getMainStockById(stockId);
@@ -159,106 +258,92 @@ public class MainStockServlet extends HttpServlet {
         }
     }
 
-    private void addMainStock(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            MainStock mainStock = (MainStock) StockFactory.createStock(StockFactory.StockType.MAIN);
+    private void addMainStock(Map<String, String> parameters) throws Exception {
+        MainStock mainStock = (MainStock) StockFactory.createStock(StockFactory.StockType.MAIN);
+        
+        String itemCode = parameters.get("itemCode");
+        Item item = itemDAO.getItemByCode(itemCode);
+        if (item != null) {
+            mainStock.setItemId(item.getItemId());
+        }
+
+        String supplierUsername = parameters.get("supplierUsername");
+        Integer supplierId = userDAO.getSupplierIdByUsername(supplierUsername);
+        if (supplierId != null) {
+            mainStock.setSupplierId(supplierId);
+        }
+
+        mainStock.setBatchCode(parameters.get("batchCode"));
+        
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        mainStock.setPurchaseDate(dateFormat.parse(parameters.get("purchaseDate")));
+        mainStock.setPurchasePrice(Double.parseDouble(parameters.get("purchasePrice")));
+        mainStock.setQuantity(Integer.parseInt(parameters.get("quantity")));
+        
+        String expiryDateStr = parameters.get("expiryDate");
+        if (expiryDateStr != null && !expiryDateStr.isEmpty()) {
+            mainStock.setExpiryDate(dateFormat.parse(expiryDateStr));
+        }
+
+        if (!mainStockDAO.doesMainStockExist(mainStock.getItemId(), mainStock.getBatchCode())) {
+            mainStockDAO.addMainStock(mainStock);
+        } else {
+            throw new Exception("An entry with the same item ID and batch code already exists.");
+        }
+    }
+
+    private void editMainStock(Map<String, String> parameters) throws Exception {
+        int stockId = Integer.parseInt(parameters.get("stockId"));
+        MainStock mainStock = mainStockDAO.getMainStockById(stockId);
+        
+        if (mainStock != null) {
+            int previousQuantity = mainStock.getQuantity();
             
-            String itemCode = request.getParameter("itemCode");
+            String itemCode = parameters.get("itemCode");
             Item item = itemDAO.getItemByCode(itemCode);
             if (item != null) {
                 mainStock.setItemId(item.getItemId());
             }
 
-            String supplierUsername = request.getParameter("supplierUsername");
+            String supplierUsername = parameters.get("supplierUsername");
             Integer supplierId = userDAO.getSupplierIdByUsername(supplierUsername);
             if (supplierId != null) {
                 mainStock.setSupplierId(supplierId);
             }
 
-            mainStock.setBatchCode(request.getParameter("batchCode"));
+            mainStock.setBatchCode(parameters.get("batchCode"));
             
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            mainStock.setPurchaseDate(dateFormat.parse(request.getParameter("purchaseDate")));
-            mainStock.setPurchasePrice(Double.parseDouble(request.getParameter("purchasePrice")));
-            mainStock.setQuantity(Integer.parseInt(request.getParameter("quantity")));
+            mainStock.setPurchaseDate(dateFormat.parse(parameters.get("purchaseDate")));
+            mainStock.setPurchasePrice(Double.parseDouble(parameters.get("purchasePrice")));
+            mainStock.setQuantity(Integer.parseInt(parameters.get("quantity")));
             
-            String expiryDateStr = request.getParameter("expiryDate");
+            String expiryDateStr = parameters.get("expiryDate");
             if (expiryDateStr != null && !expiryDateStr.isEmpty()) {
                 mainStock.setExpiryDate(dateFormat.parse(expiryDateStr));
             }
 
-            if (!mainStockDAO.doesMainStockExist(mainStock.getItemId(), mainStock.getBatchCode())) {
-                mainStockDAO.addMainStock(mainStock);
-                request.getSession().setAttribute("success", "Main stock added successfully!");
-            } else {
-                request.getSession().setAttribute("error", "An entry with the same item ID and batch code already exists.");
-            }
-        } catch (ParseException e) {
-            request.getSession().setAttribute("error", "Invalid date format.");
-        } catch (NumberFormatException e) {
-            request.getSession().setAttribute("error", "Invalid number format.");
-        } catch (Exception e) {
-            request.getSession().setAttribute("error", "Error adding main stock: " + e.getMessage());
+            mainStockDAO.editMainStock(mainStock);
+            mainStockDAO.adjustTotalStock(mainStock.getItemId(), mainStock.getQuantity() - previousQuantity);
         }
-        
-        response.sendRedirect(request.getContextPath() + "/mainstock/view");
     }
 
-    private void editMainStock(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            int stockId = Integer.parseInt(request.getParameter("stockId"));
-            MainStock mainStock = mainStockDAO.getMainStockById(stockId);
-            
-            if (mainStock != null) {
-                int previousQuantity = mainStock.getQuantity();
-                
-                String itemCode = request.getParameter("itemCode");
-                Item item = itemDAO.getItemByCode(itemCode);
-                if (item != null) {
-                    mainStock.setItemId(item.getItemId());
-                }
-
-                String supplierUsername = request.getParameter("supplierUsername");
-                Integer supplierId = userDAO.getSupplierIdByUsername(supplierUsername);
-                if (supplierId != null) {
-                    mainStock.setSupplierId(supplierId);
-                }
-
-                mainStock.setBatchCode(request.getParameter("batchCode"));
-                
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                mainStock.setPurchaseDate(dateFormat.parse(request.getParameter("purchaseDate")));
-                mainStock.setPurchasePrice(Double.parseDouble(request.getParameter("purchasePrice")));
-                mainStock.setQuantity(Integer.parseInt(request.getParameter("quantity")));
-                
-                String expiryDateStr = request.getParameter("expiryDate");
-                if (expiryDateStr != null && !expiryDateStr.isEmpty()) {
-                    mainStock.setExpiryDate(dateFormat.parse(expiryDateStr));
-                }
-
-                mainStockDAO.editMainStock(mainStock);
-                mainStockDAO.adjustTotalStock(mainStock.getItemId(), mainStock.getQuantity() - previousQuantity);
-                request.getSession().setAttribute("success", "Main stock updated successfully!");
-            }
-        } catch (ParseException e) {
-            request.getSession().setAttribute("error", "Invalid date format.");
-        } catch (NumberFormatException e) {
-            request.getSession().setAttribute("error", "Invalid number format.");
-        } catch (Exception e) {
-            request.getSession().setAttribute("error", "Error updating main stock: " + e.getMessage());
-        }
-        
-        response.sendRedirect(request.getContextPath() + "/mainstock/view");
+    private void deleteMainStock(Map<String, String> parameters) throws Exception {
+        int stockId = Integer.parseInt(parameters.get("id"));
+        mainStockDAO.deleteMainStock(stockId);
     }
 
-    private void deleteMainStock(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    @Override
+    public void destroy() {
+        logger.info("Shutting down MainStockServlet");
+        workerThreadPool.shutdown();
         try {
-            int stockId = Integer.parseInt(request.getParameter("id"));
-            mainStockDAO.deleteMainStock(stockId);
-            request.getSession().setAttribute("success", "Main stock deleted successfully!");
-        } catch (Exception e) {
-            request.getSession().setAttribute("error", "Error deleting main stock: " + e.getMessage());
+            if (!workerThreadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+                workerThreadPool.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            workerThreadPool.shutdownNow();
         }
-        response.sendRedirect(request.getContextPath() + "/mainstock/view");
+        dbConnection.closeAllConnections();
     }
 } 
