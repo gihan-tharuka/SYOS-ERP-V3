@@ -68,8 +68,20 @@ public class DailySalesReport extends ReportTemplate {
         System.out.println("Total Revenue: " + totalRevenue);
     }
 
+    public Map<String, ItemAggregate> getItemAggregates() {
+        return itemAggregates;
+    }
+
+    public int getTotalQuantitySold() {
+        return totalQuantitySold;
+    }
+
+    public double getTotalRevenue() {
+        return totalRevenue;
+    }
+
     // Inner class to store aggregated item data
-    private static class ItemAggregate {
+    public static class ItemAggregate {
         private String itemCode;
         private String itemName;
         private int quantity;
