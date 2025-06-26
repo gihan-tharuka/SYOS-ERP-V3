@@ -7,9 +7,9 @@ import model.Cashier;
 import model.Supplier;
 import model.Customer;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
@@ -19,7 +19,7 @@ public class UserServlet extends HttpServlet {
 
     @Override
     public void init() {
-        userDAO = new UserDAO();
+        userDAO = new UserDAO(dao.DatabaseConnection.getInstance().getConnection());
     }
 
     @Override
@@ -61,7 +61,11 @@ public class UserServlet extends HttpServlet {
     }
 
     private void listUsers(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<User> userList = userDAO.getAllUsers();
+        List<User> userList = new java.util.ArrayList<>();
+        userList.addAll(userDAO.getAllUsers("admin"));
+        userList.addAll(userDAO.getAllUsers("cashier"));
+        userList.addAll(userDAO.getAllUsers("supplier"));
+        userList.addAll(userDAO.getAllUsers("customer"));
         req.setAttribute("userList", userList);
         req.getRequestDispatcher("/jsp/user/user-list.jsp").forward(req, resp);
     }
@@ -72,7 +76,9 @@ public class UserServlet extends HttpServlet {
 
     private void showEditForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String username = req.getParameter("username");
-        User user = userDAO.getUserByUsername(username);
+        String role = req.getParameter("role");
+        if (role == null) role = "admin"; // default or handle as needed
+        User user = userDAO.getUserByUsername(username, role);
         req.setAttribute("user", user);
         req.getRequestDispatcher("/jsp/user/user-form.jsp").forward(req, resp);
     }
@@ -81,26 +87,33 @@ public class UserServlet extends HttpServlet {
         String role = req.getParameter("role");
         String username = req.getParameter("username");
         String password = req.getParameter("password");
-        String name = req.getParameter("name");
         String email = req.getParameter("email");
-
         User user = null;
         switch (role) {
             case "admin":
-                user = new Admin(username, password, name, email);
+                user = new Admin(username, password, email);
                 break;
-            case "cashier":
-                user = new Cashier(username, password, name, email);
+            case "cashier": {
+                String fullName = req.getParameter("fullName");
+                String mobile = req.getParameter("mobile");
+                user = new Cashier(username, password, fullName, email, mobile);
                 break;
-            case "supplier":
-                user = new Supplier(username, password, name, email);
+            }
+            case "supplier": {
+                String companyName = req.getParameter("companyName");
+                String contactPerson = req.getParameter("contactPerson");
+                String mobile = req.getParameter("mobile");
+                user = new Supplier(username, password, companyName, contactPerson, email, mobile);
                 break;
-            case "customer":
-                user = new Customer(username, password, name, email);
+            }
+            case "customer": {
+                String mobile = req.getParameter("mobile");
+                user = new Customer(username, password, email, mobile);
                 break;
+            }
         }
         if (user != null) {
-            userDAO.addUser(user);
+            userDAO.addUser(user, role);
         }
         resp.sendRedirect("user");
     }
@@ -109,33 +122,42 @@ public class UserServlet extends HttpServlet {
         String role = req.getParameter("role");
         String username = req.getParameter("username");
         String password = req.getParameter("password");
-        String name = req.getParameter("name");
         String email = req.getParameter("email");
-
         User user = null;
         switch (role) {
             case "admin":
-                user = new Admin(username, password, name, email);
+                user = new Admin(username, password, email);
                 break;
-            case "cashier":
-                user = new Cashier(username, password, name, email);
+            case "cashier": {
+                String fullName = req.getParameter("fullName");
+                String mobile = req.getParameter("mobile");
+                user = new Cashier(username, password, fullName, email, mobile);
                 break;
-            case "supplier":
-                user = new Supplier(username, password, name, email);
+            }
+            case "supplier": {
+                String companyName = req.getParameter("companyName");
+                String contactPerson = req.getParameter("contactPerson");
+                String mobile = req.getParameter("mobile");
+                user = new Supplier(username, password, companyName, contactPerson, email, mobile);
                 break;
-            case "customer":
-                user = new Customer(username, password, name, email);
+            }
+            case "customer": {
+                String mobile = req.getParameter("mobile");
+                user = new Customer(username, password, email, mobile);
                 break;
+            }
         }
         if (user != null) {
-            userDAO.updateUser(user);
+            userDAO.updateUser(user, role);
         }
         resp.sendRedirect("user");
     }
 
     private void deleteUser(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String username = req.getParameter("username");
-        userDAO.deleteUser(username);
+        String role = req.getParameter("role");
+        if (role == null) role = "admin"; // default or handle as needed
+        userDAO.deleteUser(username, role);
         resp.sendRedirect("user");
     }
 }

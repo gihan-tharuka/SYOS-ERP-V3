@@ -132,6 +132,9 @@ public class UserDAO {
             case "supplier":
                 tableName = "suppliers";
                 break;
+            case "customer":
+                tableName = "customers";
+                break;
             default:
                 throw new IllegalArgumentException("Invalid role: " + role);
         }
@@ -148,6 +151,9 @@ public class UserDAO {
                         break;
                     case "supplier":
                         users.add(new Supplier(rs.getString("username"), rs.getString("password"), rs.getString("company_name"), rs.getString("contact_person"), rs.getString("email"), rs.getString("mobile")));
+                        break;
+                    case "customer":
+                        users.add(new Customer(rs.getString("username"), rs.getString("password"), rs.getString("email"), rs.getString("mobile")));
                         break;
                 }
             }
