@@ -38,7 +38,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= sale.getSaleDate() %></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= sale.getTransactionType() %></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <a href="#" class="bg-yellow-500 text-white hover:bg-yellow-600 px-3 py-1 rounded-md text-sm font-medium transition duration-200 mr-2">View</a>
+                                            <a href="sales?action=view&id=<%= sale.getSaleId() %>" class="bg-yellow-500 text-white hover:bg-yellow-600 px-3 py-1 rounded-md text-sm font-medium transition duration-200 mr-2">View</a>
                                             <a href="sales?action=delete&id=<%= sale.getSaleId() %>" onclick="return confirm('Are you sure?')" class="bg-red-600 text-white hover:bg-red-700 px-3 py-1 rounded-md text-sm font-medium transition duration-200">Delete</a>
                                         </td>
                                     </tr>

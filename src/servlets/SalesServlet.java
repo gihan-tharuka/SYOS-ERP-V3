@@ -39,6 +39,9 @@ public class SalesServlet extends HttpServlet {
             case "delete":
                 deleteSale(req, resp);
                 break;
+            case "view":
+                viewBill(req, resp);
+                break;
             default:
                 listSales(req, resp);
         }
@@ -147,7 +150,7 @@ public class SalesServlet extends HttpServlet {
         // 1. Create Sale
         Sale sale = new Sale();
         sale.setSaleDate(new java.util.Date());
-        sale.setTransactionType("CASH");
+        sale.setTransactionType("over-the-counter");
         saleDAO.addSale(sale);
 
         // 2. Create Bill
@@ -188,5 +191,16 @@ public class SalesServlet extends HttpServlet {
         // Optionally, delete bill and bill items as well
         // saleDAO.deleteSale(saleId);
         resp.sendRedirect("sales");
+    }
+
+    private void viewBill(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        int saleId = Integer.parseInt(req.getParameter("id"));
+        Bill bill = billDAO.getBillBySaleId(saleId);
+        List<BillItem> billItems = billItemDAO.getBillItemsByBillId(bill.getSerialNumber());
+        double balance = bill.getCashTendered() - bill.getTotalPrice();
+        req.setAttribute("bill", bill);
+        req.setAttribute("billItems", billItems);
+        req.setAttribute("balance", balance);
+        req.getRequestDispatcher("/jsp/sales/sales-bill.jsp").forward(req, resp);
     }
 }

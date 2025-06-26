@@ -49,7 +49,7 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= item.getItemName() %></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= item.getQuantity() %></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$<%= String.format("%.2f", item.getItemTotalPrice()) %></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs<%= String.format("%.2f", item.getItemTotalPrice()) %></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             <form action="sales" method="post" style="display:inline;">
                                                 <input type="hidden" name="action" value="removeItem" />

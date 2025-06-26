@@ -44,15 +44,15 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= item.getItemName() %></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= item.getQuantity() %></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$<%= String.format("%.2f", item.getItemTotalPrice()) %></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs<%= String.format("%.2f", item.getItemTotalPrice()) %></td>
                                     </tr>
                                     <% } %>
                                 </tbody>
                             </table>
                         </div>
-                        <div class="mb-2"><span class="font-medium">Total:</span> $<%= String.format("%.2f", bill.getTotalPrice()) %></div>
-                        <div class="mb-2"><span class="font-medium">Cash Tendered:</span> $<%= String.format("%.2f", bill.getCashTendered()) %></div>
-                        <div class="mb-2"><span class="font-medium">Balance:</span> $<%= String.format("%.2f", balance) %></div>
+                        <div class="mb-2"><span class="font-medium">Total:</span> Rs<%= String.format("%.2f", bill.getTotalPrice()) %></div>
+                        <div class="mb-2"><span class="font-medium">Cash Tendered:</span> Rs<%= String.format("%.2f", bill.getCashTendered()) %></div>
+                        <div class="mb-2"><span class="font-medium">Balance:</span> Rs<%= String.format("%.2f", balance) %></div>
                     </div>
                 </div>
             </div>

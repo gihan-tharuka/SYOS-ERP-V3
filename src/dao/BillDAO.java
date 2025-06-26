@@ -57,5 +57,28 @@ public BillDAO(Connection connection) {
         return null;
     }
 
+    public Bill getBillBySaleId(int saleId) {
+        String query = "SELECT * FROM Bills WHERE sale_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, saleId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Bill bill = new Bill();
+                bill.setSerialNumber(rs.getInt("serial_number"));
+                bill.setSaleId(rs.getInt("sale_id"));
+                bill.setTotalPrice(rs.getDouble("total_price"));
+                bill.setDiscount(rs.getDouble("discount"));
+                bill.setCashTendered(rs.getDouble("cash_tendered"));
+                bill.setChangeAmount(rs.getDouble("change_amount"));
+                bill.setBillDate(rs.getDate("bill_date"));
+                bill.setPaymentMethod(rs.getString("payment_method"));
+                return bill;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
 
