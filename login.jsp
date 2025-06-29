@@ -59,7 +59,7 @@
                 <select id="role" name="role" required class="block w-full px-3 py-3 text-gray-700 bg-gray-50 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200">
                     <option value="" disabled selected>Select Role</option>
                     <option value="admin">Admin</option>
-                    <option value="cashier">Cashier</option>
+
                     <option value="customer">Customer</option>
                 </select>
             </div>
