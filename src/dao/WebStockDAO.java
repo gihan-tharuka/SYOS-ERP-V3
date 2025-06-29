@@ -10,6 +10,7 @@ import strategy.OldestBatchStrategy;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,7 +62,7 @@ public class WebStockDAO {
 
     public List<WebStock> getAllWebStocks() {
         List<WebStock> webStocks = new ArrayList<>();
-        String query = "SELECT * FROM Web_Stock";
+        String query = "SELECT * FROM Web_Stock ORDER BY item_id";
         try (PreparedStatement stmt = connection.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -79,9 +80,10 @@ public class WebStockDAO {
     }
 
     public Map<WebStock, String> getAllWebStocksWithItemCodes() {
-        Map<WebStock, String> webStocksWithItemCodes = new HashMap<>();
+        Map<WebStock, String> webStocksWithItemCodes = new LinkedHashMap<>();
         String query = "SELECT ws.web_id, ws.item_id, ws.web_capacity, ws.current_quantity, i.item_code " +
-                "FROM Web_Stock ws JOIN Items i ON ws.item_id = i.item_id";
+                "FROM Web_Stock ws JOIN Items i ON ws.item_id = i.item_id " +
+                "ORDER BY i.item_code";
         try (PreparedStatement stmt = connection.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
