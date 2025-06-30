@@ -118,7 +118,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Total Revenue</p>
-                                <p class="text-2xl font-bold text-gray-900">$<%= String.format("%.2f", report.getTotalRevenue()) %></p>
+                                <p class="text-2xl font-bold text-gray-900">Rs.<%= String.format("%.2f", report.getTotalRevenue()) %></p>
                             </div>
                         </div>
                     </div>
@@ -150,7 +150,7 @@
                                             <%= aggregate.getQuantity() %>
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">$<%= String.format("%.2f", aggregate.getTotalPrice()) %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">Rs.<%= String.format("%.2f", aggregate.getTotalPrice()) %></td>
                                 </tr>
                                 <% } %>
                             </tbody>
@@ -166,7 +166,7 @@
                                 </tr>
                                 <tr>
                                     <td colspan="2" class="px-6 py-4 text-right text-sm font-bold text-gray-900">Total Revenue:</td>
-                                    <td colspan="2" class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-lg">$<%= String.format("%.2f", report.getTotalRevenue()) %></td>
+                                    <td colspan="2" class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-lg">Rs.<%= String.format("%.2f", report.getTotalRevenue()) %></td>
                                 </tr>
                             </tfoot>
                         </table>

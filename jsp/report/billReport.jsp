@@ -100,7 +100,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Total Revenue</p>
-                                <p class="text-2xl font-bold text-gray-900">$<%= String.format("%.2f", totalRevenue) %></p>
+                                <p class="text-2xl font-bold text-gray-900">Rs.<%= String.format("%.2f", totalRevenue) %></p>
                             </div>
                         </div>
                     </div>
@@ -114,7 +114,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Cash Tendered</p>
-                                <p class="text-2xl font-bold text-gray-900">$<%= String.format("%.2f", totalCashTendered) %></p>
+                                <p class="text-2xl font-bold text-gray-900">Rs.<%= String.format("%.2f", totalCashTendered) %></p>
                             </div>
                         </div>
                     </div>
@@ -128,7 +128,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Total Change</p>
-                                <p class="text-2xl font-bold text-gray-900">$<%= String.format("%.2f", totalChange) %></p>
+                                <p class="text-2xl font-bold text-gray-900">Rs.<%= String.format("%.2f", totalChange) %></p>
                             </div>
                         </div>
                     </div>
@@ -156,9 +156,9 @@
                                 <% for (Bill bill : bills) { %>
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= bill.getSerialNumber() %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$<%= String.format("%.2f", bill.getTotalPrice()) %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$<%= String.format("%.2f", bill.getCashTendered()) %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$<%= String.format("%.2f", bill.getChangeAmount()) %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs.<%= String.format("%.2f", bill.getTotalPrice()) %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs.<%= String.format("%.2f", bill.getCashTendered()) %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs.<%= String.format("%.2f", bill.getChangeAmount()) %></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= bill.getBillDate() %></td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 

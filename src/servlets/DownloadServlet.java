@@ -282,7 +282,7 @@ public class DownloadServlet extends HttpServlet {
             writer.println("<tr><th>Serial Number</th><th>Total Price</th><th>Cash Tendered</th><th>Change Amount</th><th>Bill Date</th><th>Payment Method</th></tr>");
             
             for (model.Bill bill : bills) {
-                writer.printf("<tr><td>%d</td><td>$%.2f</td><td>$%.2f</td><td>$%.2f</td><td>%s</td><td>%s</td></tr>%n",
+                writer.printf("<tr><td>%d</td><td>Rs.%.2f</td><td>Rs.%.2f</td><td>Rs.%.2f</td><td>%s</td><td>%s</td></tr>%n",
                     bill.getSerialNumber(),
                     bill.getTotalPrice(),
                     bill.getCashTendered(),
@@ -371,7 +371,7 @@ public class DownloadServlet extends HttpServlet {
             writer.println("<tr><th>Item Code</th><th>Item Name</th><th>Quantity</th><th>Total Price</th></tr>");
             
             for (DailySalesReport.ItemAggregate aggregate : itemAggregates.values()) {
-                writer.printf("<tr><td>%s</td><td>%s</td><td>%d</td><td>$%.2f</td></tr>%n",
+                writer.printf("<tr><td>%s</td><td>%s</td><td>%d</td><td>Rs.%.2f</td></tr>%n",
                     aggregate.getItemCode(),
                     aggregate.getItemName(),
                     aggregate.getQuantity(),
