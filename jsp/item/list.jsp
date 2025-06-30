@@ -53,7 +53,7 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${item.discount}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                                                 <c:if test="${not empty item.imagePath}">
-                                                    <img src="/${item.imagePath}" alt="Item Image" class="h-12 w-12 object-cover rounded border" />
+                                                    <img src="${pageContext.request.contextPath}/${item.imagePath}" alt="Item Image" class="h-12 w-12 object-cover rounded border" />
                                                 </c:if>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
