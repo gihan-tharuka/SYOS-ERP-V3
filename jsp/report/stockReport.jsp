@@ -40,7 +40,7 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <h2 class="text-2xl font-bold text-gray-800">Stock Report</h2>
-                                <p class="text-gray-600">Generated on <%= new SimpleDateFormat("MMMM dd, yyyy 'at' HH:mm:ss").format(new Date()) %></p>
+                                <p class="text-gray-600">Generated on <%= new SimpleDateFormat("MMMM dd, yyyy 'at' HH:mm:ss").format(new java.util.Date()) %></p>
                             </div>
                             <div class="flex space-x-3">
                                 <button onclick="downloadCSV()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200 flex items-center">
@@ -78,7 +78,7 @@
                         
                         Date expiryDate = (Date) stock[4];
                         if (expiryDate != null) {
-                            long daysUntilExpiry = (expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
+                            long daysUntilExpiry = (expiryDate.getTime() - new java.util.Date().getTime()) / (1000 * 60 * 60 * 24);
                             if (daysUntilExpiry <= 30 && daysUntilExpiry > 0) {
                                 expiringSoon++;
                             }
@@ -177,7 +177,7 @@
                                     String statusClass = "";
                                     
                                     if (expiryDate != null) {
-                                        long daysUntilExpiry = (expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
+                                        long daysUntilExpiry = (expiryDate.getTime() - new java.util.Date().getTime()) / (1000 * 60 * 60 * 24);
                                         if (daysUntilExpiry < 0) {
                                             status = "Expired";
                                             statusClass = "bg-red-100 text-red-800";
