@@ -6,13 +6,19 @@ public class Item {
     private String itemName;
     private double price;
     private Double discount;
+    private String imagePath;
 
-    public Item(int itemId, String itemCode, String itemName, double price, Double discount) {
+    public Item(int itemId, String itemCode, String itemName, double price, Double discount, String imagePath) {
         this.itemId = itemId;
         this.itemCode = itemCode;
         this.itemName = itemName;
         this.price = price;
         this.discount = discount;
+        this.imagePath = imagePath;
+    }
+
+    public Item(int itemId, String itemCode, String itemName, double price, Double discount) {
+        this(itemId, itemCode, itemName, price, discount, null);
     }
 
     public int getItemId() {
@@ -53,6 +59,14 @@ public class Item {
 
     public void setDiscount(double discount){
         this.discount = discount;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 }
 

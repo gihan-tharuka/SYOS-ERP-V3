@@ -40,6 +40,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
@@ -50,6 +51,11 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${item.itemName}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${item.price}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${item.discount}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                                <c:if test="${not empty item.imagePath}">
+                                                    <img src="/${item.imagePath}" alt="Item Image" class="h-12 w-12 object-cover rounded border" />
+                                                </c:if>
+                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <a href="item-management?action=edit&code=${item.itemCode}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
                                                 <a href="item-management?action=delete&code=${item.itemCode}" class="text-red-600 hover:text-red-900" 

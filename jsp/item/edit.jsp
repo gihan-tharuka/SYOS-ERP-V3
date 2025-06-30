@@ -26,7 +26,7 @@
                     <div class="p-6">
                         <h2 class="text-xl font-semibold text-gray-800 mb-6 border-b pb-2">Edit Item</h2>
                         
-                        <form action="item-management" method="post">
+                        <form action="item-management" method="post" enctype="multipart/form-data">
                             <input type="hidden" name="action" value="edit">
                             
                             <div class="mb-4">
@@ -51,6 +51,19 @@
                                 <label for="discount" class="block text-gray-700 text-sm font-bold mb-2">Discount:</label>
                                 <input type="number" id="discount" name="discount" step="0.01" value="${item.discount}"
                                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            
+                            <!-- Image Upload -->
+                            <div class="mb-6">
+                                <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Item Image:</label>
+                                <input type="file" id="image" name="image" accept="image/*"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <c:if test="${not empty item.imagePath}">
+                                    <div class="mt-2">
+                                        <img src="/${item.imagePath}" alt="Current Image" class="h-24 rounded border" />
+                                        <p class="text-xs text-gray-500">Current image</p>
+                                    </div>
+                                </c:if>
                             </div>
                             
                             <div class="flex items-center justify-between">

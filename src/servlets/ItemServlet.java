@@ -13,11 +13,16 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 
 @WebServlet("/item-management")
+@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 10)
 public class ItemServlet extends HttpServlet {
     private ItemDAO itemDAO;
     private ItemManagementView view;
@@ -76,33 +81,44 @@ public class ItemServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
-        
+        String imagePath = null;
+        String uploadDir = getServletContext().getRealPath("/resources/item-images");
+        Files.createDirectories(Paths.get(uploadDir));
+        Part imagePart = request.getPart("image");
+        if (imagePart != null && imagePart.getSize() > 0) {
+            String fileName = Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
+            String savedFileName = System.currentTimeMillis() + "_" + fileName;
+            String fullPath = Paths.get(uploadDir, savedFileName).toString();
+            imagePart.write(fullPath);
+            imagePath = "resources/item-images/" + savedFileName;
+        }
         switch (action) {
-            case "add":
+            case "add": {
                 String itemCode = request.getParameter("code");
                 String itemName = request.getParameter("name");
                 double price = Double.parseDouble(request.getParameter("price"));
                 double discount = Double.parseDouble(request.getParameter("discount"));
-                
-                Item newItem = new Item(0, itemCode, itemName, price, discount);
+                Item newItem = new Item(0, itemCode, itemName, price, discount, imagePath);
                 AddItemCommand addCommand = new AddItemCommand(itemDAO, view);
                 addCommand.setItem(newItem);
                 addCommand.execute();
                 response.sendRedirect("item-management");
                 break;
-                
-            case "edit":
-                itemCode = request.getParameter("code");
-                itemName = request.getParameter("name");
-                price = Double.parseDouble(request.getParameter("price"));
-                discount = Double.parseDouble(request.getParameter("discount"));
-                
-                Item updatedItem = new Item(0, itemCode, itemName, price, discount);
+            }
+            case "edit": {
+                String itemCode = request.getParameter("code");
+                String itemName = request.getParameter("name");
+                double price = Double.parseDouble(request.getParameter("price"));
+                double discount = Double.parseDouble(request.getParameter("discount"));
+                Item existingItem = itemDAO.getItemByCode(itemCode);
+                String finalImagePath = imagePath != null ? imagePath : (existingItem != null ? existingItem.getImagePath() : null);
+                Item updatedItem = new Item(0, itemCode, itemName, price, discount, finalImagePath);
                 EditItemCommand editCommand = new EditItemCommand(itemDAO, view);
                 editCommand.setItem(updatedItem);
                 editCommand.execute();
                 response.sendRedirect("item-management");
                 break;
+            }
         }
     }
 }

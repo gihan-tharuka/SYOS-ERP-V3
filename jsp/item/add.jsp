@@ -26,7 +26,7 @@
                     <div class="p-6">
                         <h2 class="text-xl font-semibold text-gray-800 mb-6 border-b pb-2">Add New Item</h2>
 
-                        <form action="item-management" method="post">
+                        <form action="item-management" method="post" enctype="multipart/form-data">
                             <input type="hidden" name="action" value="add">
 
                             <!-- Item Code -->
@@ -54,6 +54,13 @@
                             <div class="mb-6">
                                 <label for="discount" class="block text-gray-700 text-sm font-bold mb-2">Discount:</label>
                                 <input type="number" id="discount" name="discount" step="0.01" value="0.00"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+
+                            <!-- Image Upload -->
+                            <div class="mb-6">
+                                <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Item Image:</label>
+                                <input type="file" id="image" name="image" accept="image/*"
                                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                             </div>
 
