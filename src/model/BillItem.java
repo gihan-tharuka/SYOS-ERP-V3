@@ -7,16 +7,18 @@ public class BillItem {
     private String itemName;
     private int quantity;
     private double itemTotalPrice;
+    private double price;
 
     public BillItem() {}
 
-    public BillItem(int billItemId, int billId, int itemId, String itemName, int quantity, double itemTotalPrice) {
+    public BillItem(int billItemId, int billId, int itemId, String itemName, int quantity, double itemTotalPrice, double price) {
         this.billItemId = billItemId;
         this.billId = billId;
         this.itemId = itemId;
         this.itemName = itemName;
         this.quantity = quantity;
         this.itemTotalPrice = itemTotalPrice;
+        this.price = price;
     }
 
     public int getBillItemId() {
@@ -65,6 +67,14 @@ public class BillItem {
 
     public void setItemTotalPrice(double itemTotalPrice) {
         this.itemTotalPrice = itemTotalPrice;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 }
 
