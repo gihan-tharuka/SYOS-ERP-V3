@@ -38,9 +38,9 @@ public class ReportServlet extends HttpServlet {
             case "/reorder":
                 generateReorderReport(request, response);
                 break;
-//            case "/reshelve":
-//                generateReshelveReport(request, response);
-//                break;
+            case "/reshelve":
+                generateReshelveReport(request, response);
+                break;
             case "/daily-sales":
                 generateDailySalesReport(request, response);
                 break;
@@ -74,18 +74,18 @@ public class ReportServlet extends HttpServlet {
         request.getRequestDispatcher("/jsp/report/reorderReport.jsp").forward(request, response);
     }
 
-//    private void generateReshelveReport(HttpServletRequest request, HttpServletResponse response)
-//            throws ServletException, IOException {
-//        ReshelveReport report = new ReshelveReport(
-//            dao.ShelfStockDAO.getInstance(),
-//            dao.MainStockDAO.getInstance(),
-//            dao.ItemDAO.getInstance(),
-//            strategy.BatchSelectionStrategy.getInstance()
-//        );
-//        report.generateReport();
-//        request.setAttribute("report", report);
-//        request.getRequestDispatcher("/jsp/report/reshelveReport.jsp").forward(request, response);
-//    }
+    private void generateReshelveReport(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        ReshelveReport report = new ReshelveReport(
+            new dao.ShelfStockDAO(dao.DatabaseConnection.getInstance().getConnection()),
+            new dao.MainStockDAO(dao.DatabaseConnection.getInstance().getConnection()),
+            new dao.ItemDAO(dao.DatabaseConnection.getInstance().getConnection(), new observer.ReorderSubject()),
+            new strategy.OldestBatchStrategy()
+        );
+        report.generateReport();
+        request.setAttribute("report", report);
+        request.getRequestDispatcher("/jsp/report/reshelveReport.jsp").forward(request, response);
+    }
 
     private void generateDailySalesReport(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
