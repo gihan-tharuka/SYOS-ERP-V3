@@ -3,7 +3,6 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.sql.Date" %>
 <%@ page import="java.text.SimpleDateFormat" %>
-<%@ page import="java.util.Date" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -128,7 +127,7 @@
                 <!-- Detailed Report Table -->
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-800">Sales Details for <%= new SimpleDateFormat("MMMM dd, yyyy").format(report.getReportDate()) %></h3>
+                        <h3 class="text-lg font-semibold text-gray-800">Sales Details for <%= report.getReportDate() != null ? new SimpleDateFormat("MMMM dd, yyyy").format(report.getReportDate()) : "Selected Date" %></h3>
                         <p class="text-sm text-gray-600">Complete breakdown of daily sales by item</p>
                     </div>
                     <div class="overflow-x-auto">

@@ -11,7 +11,6 @@ import java.util.Map;
 public class DailySalesReport extends ReportTemplate {
     private List<BillItem> salesDetails;
     private ReportDAO reportDAO;
-    private Date reportDate;
     private Map<String, ItemAggregate> itemAggregates;
     private int totalQuantitySold;
     private double totalRevenue;
@@ -21,14 +20,9 @@ public class DailySalesReport extends ReportTemplate {
         this.itemAggregates = new HashMap<>();
     }
 
-    public void setReportDate(Date reportDate) {
-        this.reportDate = reportDate;
-    }
-
     @Override
     protected void fetchData() {
-
-        salesDetails = reportDAO.getDailySalesDetails(reportDate);
+        salesDetails = reportDAO.getDailySalesDetails((Date) reportDate);
     }
 
     @Override
