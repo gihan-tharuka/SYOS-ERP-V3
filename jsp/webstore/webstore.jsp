@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -138,9 +139,20 @@ function pollForUpdates() {
                                     <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" 
                                            id="quantity" name="quantity" min="1" max="${entry.key.currentQuantity}" value="1" required>
                                 </div>
-                                <button type="submit" class="w-full bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-md font-medium transition duration-200"
-                                        ${entry.key.currentQuantity == 0 ? 'disabled' : ''}>
-                                    ${entry.key.currentQuantity == 0 ? 'Out of Stock' : 'Add to Cart'}
+                                <c:set var="searchId" value=",${entry.key.itemId}," />
+                                <button type="submit"
+                                    class="w-full px-4 py-2 rounded-md font-medium transition duration-200
+                                    <c:choose>
+                                        <c:when test="${entry.key.currentQuantity == 0}">bg-gray-400 text-white opacity-50 cursor-not-allowed</c:when>
+                                        <c:when test="${fn:contains(cartItemIdsStr, searchId)}">bg-green-600 text-white hover:bg-green-700</c:when>
+                                        <c:otherwise>bg-indigo-600 text-white hover:bg-indigo-700</c:otherwise>
+                                    </c:choose>"
+                                    <c:if test="${entry.key.currentQuantity == 0 || fn:contains(cartItemIdsStr, searchId)}">disabled</c:if>>
+                                    <c:choose>
+                                        <c:when test="${entry.key.currentQuantity == 0}">Out of Stock</c:when>
+                                        <c:when test="${fn:contains(cartItemIdsStr, searchId)}">Added to Cart</c:when>
+                                        <c:otherwise>Add to Cart</c:otherwise>
+                                    </c:choose>
                                 </button>
                             </form>
                         </div>

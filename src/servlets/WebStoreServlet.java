@@ -47,6 +47,28 @@ public class WebStoreServlet extends HttpServlet {
         
         request.setAttribute("webStocks", webStocks);
         request.setAttribute("webStockItems", webStockItems);
+        
+        // Pass cart item IDs to JSP
+        HttpSession session = request.getSession(false);
+        List<CartItem> cart = null;
+        if (session != null) {
+            cart = (List<CartItem>) session.getAttribute("cart");
+        }
+        java.util.Set<Integer> cartItemIds = new java.util.HashSet<>();
+        if (cart != null) {
+            for (CartItem ci : cart) {
+                cartItemIds.add(ci.getItemId());
+            }
+        }
+        request.setAttribute("cartItemIds", cartItemIds);
+        
+        // Also pass a comma-separated string for JSP fn:contains
+        StringBuilder cartItemIdsStr = new StringBuilder();
+        for (Integer id : cartItemIds) {
+            cartItemIdsStr.append(",").append(id).append(",");
+        }
+        request.setAttribute("cartItemIdsStr", cartItemIdsStr.toString());
+        
         request.getRequestDispatcher("/jsp/webstore/webstore.jsp").forward(request, response);
     }
 
