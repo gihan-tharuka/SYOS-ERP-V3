@@ -264,5 +264,21 @@ public class UserDAO {
         }
         return null;
     }
+
+    public boolean updateCustomerAccount(String currentUsername, String newUsername, String password, String email, String mobile) {
+        String query = "UPDATE customers SET username = ?, password = ?, email = ?, mobile = ? WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, newUsername);
+            stmt.setString(2, password);
+            stmt.setString(3, email);
+            stmt.setString(4, mobile);
+            stmt.setString(5, currentUsername);
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
 
