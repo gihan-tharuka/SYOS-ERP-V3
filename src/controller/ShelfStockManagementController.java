@@ -19,7 +19,7 @@ public class ShelfStockManagementController {
     private ShelfStockManagementView view;
     private ShelfStockDAO shelfStockDAO;
     private MainStockDAO mainStockDAO;
-    private ItemDAO itemDAO; // Add this
+    private ItemDAO itemDAO;
     private ReorderLevelDAO reorderLevelDAO;
 
     public ShelfStockManagementController(ShelfStockManagementView view, ShelfStockDAO shelfStockDAO, MainStockDAO mainStockDAO, ItemDAO itemDAO, ReorderLevelDAO reorderLevelDAO) {
@@ -28,6 +28,23 @@ public class ShelfStockManagementController {
         this.mainStockDAO = mainStockDAO;
         this.itemDAO = itemDAO;
         this.reorderLevelDAO = reorderLevelDAO;
+    }
+
+    // Add getter methods for DAOs
+    public ShelfStockDAO getShelfStockDAO() {
+        return shelfStockDAO;
+    }
+
+    public ItemDAO getItemDAO() {
+        return itemDAO;
+    }
+
+    public MainStockDAO getMainStockDAO() {
+        return mainStockDAO;
+    }
+
+    public ReorderLevelDAO getReorderLevelDAO() {
+        return reorderLevelDAO;
     }
 
     public void showShelfStockManagementMenu() {

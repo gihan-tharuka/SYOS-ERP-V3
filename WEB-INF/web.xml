@@ -7,5 +7,8 @@
     <display-name>SYOS ERP System</display-name>
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
+        <welcome-file>jsp/login.jsp</welcome-file>
+        <!-- other welcome files -->
     </welcome-file-list>
+
 </web-app>

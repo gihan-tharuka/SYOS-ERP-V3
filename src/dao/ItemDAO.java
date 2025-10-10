@@ -16,18 +16,19 @@ public ItemDAO(Connection connection, ReorderSubject reorderSubject) {
 }
 
     public void addItem(Item item) {
-        String query = "INSERT INTO items (item_code, item_name, price, discount) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO items (item_code, item_name, price, discount, image_path) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, item.getItemCode());
             stmt.setString(2, item.getItemName());
             stmt.setDouble(3, item.getPrice());
             stmt.setDouble(4, item.getDiscount());
+            stmt.setString(5, item.getImagePath());
             stmt.executeUpdate();
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     int itemId = generatedKeys.getInt(1);
-                    item = new Item(itemId, item.getItemCode(), item.getItemName(), item.getPrice(), item.getDiscount());
+                    item = new Item(itemId, item.getItemCode(), item.getItemName(), item.getPrice(), item.getDiscount(), item.getImagePath());
                     reorderSubject.itemAdded(item);// not working properly
                 }
             }
@@ -42,7 +43,14 @@ public ItemDAO(Connection connection, ReorderSubject reorderSubject) {
         try (PreparedStatement stmt = connection.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                items.add(new Item(rs.getInt("item_id"), rs.getString("item_code"), rs.getString("item_name"), rs.getDouble("price"), rs.getDouble("discount")));
+                items.add(new Item(
+                    rs.getInt("item_id"),
+                    rs.getString("item_code"),
+                    rs.getString("item_name"),
+                    rs.getDouble("price"),
+                    rs.getDouble("discount"),
+                    rs.getString("image_path")
+                ));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -90,7 +98,8 @@ public ItemDAO(Connection connection, ReorderSubject reorderSubject) {
                         rs.getString("item_code"),
                         rs.getString("item_name"),
                         rs.getDouble("price"),
-                        rs.getDouble("discount")
+                        rs.getDouble("discount"),
+                        rs.getString("image_path")
                 );
             }
         } catch (SQLException e) {
@@ -110,12 +119,13 @@ public ItemDAO(Connection connection, ReorderSubject reorderSubject) {
     }
 
     public void updateItem(Item item) {
-        String query = "UPDATE Items SET item_name = ?, price = ?, discount = ? WHERE item_code = ?";
+        String query = "UPDATE Items SET item_name = ?, price = ?, discount = ?, image_path = ? WHERE item_code = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, item.getItemName());
             stmt.setDouble(2, item.getPrice());
             stmt.setDouble(3, item.getDiscount());
-            stmt.setString(4, item.getItemCode());
+            stmt.setString(4, item.getImagePath());
+            stmt.setString(5, item.getItemCode());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

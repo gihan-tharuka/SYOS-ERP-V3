@@ -2,6 +2,7 @@ package dao;
 
 import model.Admin;
 import model.Cashier;
+import model.Customer;
 import model.Supplier;
 import model.User;
 
@@ -12,9 +13,9 @@ import java.util.List;
 public class UserDAO {
     private Connection connection;
 
-public UserDAO(Connection connection) {
-    this.connection = connection;
-}
+    public UserDAO(Connection connection) {
+        this.connection = connection;
+    }
 
     public User getUserByUsername(String username, String role) {
         String tableName;
@@ -27,6 +28,9 @@ public UserDAO(Connection connection) {
                 break;
             case "supplier":
                 tableName = "suppliers";
+                break;
+            case "customer":
+                tableName = "customers";
                 break;
             default:
                 throw new IllegalArgumentException("Invalid role: " + role);
@@ -43,6 +47,8 @@ public UserDAO(Connection connection) {
                         return new Cashier(rs.getString("username"), rs.getString("password"), rs.getString("full_name"), rs.getString("email"), rs.getString("mobile"));
                     case "supplier":
                         return new Supplier(rs.getString("username"), rs.getString("password"), rs.getString("company_name"), rs.getString("contact_person"), rs.getString("email"), rs.getString("mobile"));
+                    case "customer":
+                        return new Customer(rs.getString("username"), rs.getString("password"), rs.getString("email"), rs.getString("mobile"));
                     default:
                         return null;
                 }
@@ -52,7 +58,6 @@ public UserDAO(Connection connection) {
         }
         return null;
     }
-
 
     public void addUser(User user, String role) {
         String tableName;
@@ -66,6 +71,9 @@ public UserDAO(Connection connection) {
             case "supplier":
                 tableName = "suppliers";
                 break;
+            case "customer":
+                tableName = "customers";
+                break;
             default:
                 throw new IllegalArgumentException("Invalid role: " + role);
         }
@@ -75,12 +83,16 @@ public UserDAO(Connection connection) {
             query.append(", full_name, mobile");
         } else if (role.equalsIgnoreCase("supplier")) {
             query.append(", company_name, contact_person, mobile");
+        } else if (role.equalsIgnoreCase("customer")) {
+            query.append(", mobile");
         }
         query.append(") VALUES (?, ?, ?");
         if (role.equalsIgnoreCase("cashier")) {
             query.append(", ?, ?");
         } else if (role.equalsIgnoreCase("supplier")) {
             query.append(", ?, ?, ?");
+        } else if (role.equalsIgnoreCase("customer")) {
+            query.append(", ?");
         }
         query.append(")");
 
@@ -97,15 +109,15 @@ public UserDAO(Connection connection) {
                 stmt.setString(4, supplier.getCompanyName());
                 stmt.setString(5, supplier.getContactPerson());
                 stmt.setString(6, supplier.getMobile());
+            } else if (role.equalsIgnoreCase("customer")) {
+                Customer customer = (Customer) user;
+                stmt.setString(4, customer.getMobile());
             }
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-
-
 
     public List<User> getAllUsers(String role) {
         List<User> users = new ArrayList<>();
@@ -119,6 +131,9 @@ public UserDAO(Connection connection) {
                 break;
             case "supplier":
                 tableName = "suppliers";
+                break;
+            case "customer":
+                tableName = "customers";
                 break;
             default:
                 throw new IllegalArgumentException("Invalid role: " + role);
@@ -136,6 +151,9 @@ public UserDAO(Connection connection) {
                         break;
                     case "supplier":
                         users.add(new Supplier(rs.getString("username"), rs.getString("password"), rs.getString("company_name"), rs.getString("contact_person"), rs.getString("email"), rs.getString("mobile")));
+                        break;
+                    case "customer":
+                        users.add(new Customer(rs.getString("username"), rs.getString("password"), rs.getString("email"), rs.getString("mobile")));
                         break;
                 }
             }
@@ -227,8 +245,40 @@ public UserDAO(Connection connection) {
         return null;
     }
 
+    public Integer getUserIdByUsername(String username) {
+        // Try each user table
+        String[] tables = {"admins", "cashiers", "suppliers", "customers"};
+        String[] idColumns = {"admin_id", "cashier_id", "supplier_id", "customer_id"};
+        
+        for (int i = 0; i < tables.length; i++) {
+            String query = "SELECT " + idColumns[i] + " FROM " + tables[i] + " WHERE username = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, username);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt(idColumns[i]);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
 
-
-
+    public boolean updateCustomerAccount(String currentUsername, String newUsername, String password, String email, String mobile) {
+        String query = "UPDATE customers SET username = ?, password = ?, email = ?, mobile = ? WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, newUsername);
+            stmt.setString(2, password);
+            stmt.setString(3, email);
+            stmt.setString(4, mobile);
+            stmt.setString(5, currentUsername);
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
 

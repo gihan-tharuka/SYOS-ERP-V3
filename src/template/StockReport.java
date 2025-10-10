@@ -40,4 +40,8 @@ public StockReport(ReportDAO reportDAO) {
                     itemCode, itemName, batchCode, quantity, expiryDate);
         }
     }
+
+    public List<Object[]> getStockDetails() {
+        return stockDetails;
+    }
 }

@@ -15,10 +15,15 @@ public SaleDAO(Connection connection) {
 }
 
     public void addSale(Sale sale) {
-        String query = "INSERT INTO Sales (sale_date, transaction_type) VALUES (?, ?)";
+        String query = "INSERT INTO Sales (sale_date, transaction_type, user_id) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setDate(1, new java.sql.Date(sale.getSaleDate().getTime()));
             stmt.setString(2, sale.getTransactionType());
+            if (sale.getUserId() != null) {
+                stmt.setInt(3, sale.getUserId());
+            } else {
+                stmt.setNull(3, Types.INTEGER);
+            }
             stmt.executeUpdate();
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
@@ -41,6 +46,10 @@ public SaleDAO(Connection connection) {
                 sale.setSaleId(rs.getInt("sale_id"));
                 sale.setSaleDate(rs.getDate("sale_date"));
                 sale.setTransactionType(rs.getString("transaction_type"));
+                int userId = rs.getInt("user_id");
+                if (!rs.wasNull()) {
+                    sale.setUserId(userId);
+                }
                 sales.add(sale);
             }
         } catch (SQLException e) {

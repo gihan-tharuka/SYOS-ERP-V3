@@ -79,4 +79,16 @@ public class ReshelveReport extends ReportTemplate {
             System.out.println("---------------");
         }
     }
+
+    public Map<Integer, List<BatchSelection>> getReshelvingInfo() {
+        return reshelvingInfo;
+    }
+
+    public Map<Integer, Integer> getReshelfQuantities() {
+        return reshelfQuantities;
+    }
+
+    public Map<Integer, String> getItemNames() {
+        return itemNames;
+    }
 }

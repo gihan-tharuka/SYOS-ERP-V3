@@ -24,7 +24,7 @@ public class ReportDAO {
 
 public List<BillItem> getDailySalesDetails(Date date) {
     List<BillItem> salesDetails = new ArrayList<>();
-    String query = "SELECT bi.bill_item_id, bi.bill_id, bi.item_id, i.item_code, i.item_name, bi.quantity, (bi.quantity * i.price) AS item_total_price " +
+    String query = "SELECT bi.bill_item_id, bi.bill_id, bi.item_id, i.item_code, i.item_name, bi.quantity, (bi.quantity * i.price) AS item_total_price, i.price as unit_price " +
             "FROM Bills b " +
             "JOIN bill_items bi ON b.serial_number = bi.bill_id " +
             "JOIN Items i ON bi.item_id = i.item_id " +
@@ -39,7 +39,8 @@ public List<BillItem> getDailySalesDetails(Date date) {
                     rs.getInt("item_id"),
                     rs.getString("item_name"),
                     rs.getInt("quantity"),
-                    rs.getDouble("item_total_price")
+                    rs.getDouble("item_total_price"),
+                    rs.getDouble("unit_price")
             );
             salesDetails.add(billItem);
         }

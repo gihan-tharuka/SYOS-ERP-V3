@@ -4,7 +4,7 @@ import java.util.Date;
 
 public abstract class ReportTemplate {
     private String reportName;
-    private Date reportDate;
+    protected Date reportDate;
 
 
     public final void generateReport() {

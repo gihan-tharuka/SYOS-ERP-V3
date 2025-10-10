@@ -38,4 +38,8 @@ public ReorderReport(ReportDAO reportDAO) {
             System.out.printf("%-10s | %-8s | %-16d | %-18d\n", itemCode, itemName, currentQuantity, quantityToReorder);
         }
     }
+
+    public List<Object[]> getReorderItems() {
+        return reorderItems;
+    }
 }

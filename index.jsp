@@ -4,8 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Welcome Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Welcome to the system!</h1>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Welcome to the System!</h1>
+        <p class="text-gray-600 mb-8">Please login to access your account and manage the system.</p>
+
+        <div class="space-y-4">
+            <form action="login.jsp" method="get" class="w-full">
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+                    Go to Login
+                </button>
+            </form>
+
+            <a href="jsp/customer/register.jsp" class="block w-full bg-white border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 font-medium py-3 px-4 rounded-lg transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+                Register as Customer
+            </a>
+        </div>
+
+        <div class="mt-6 text-sm text-gray-500">
+            Need admin access? <a href="#" class="text-indigo-600 hover:text-indigo-800">Contact admin</a> for access.
+        </div>
+    </div>
 </body>
 </html>

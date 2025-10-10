@@ -54,14 +54,13 @@ public class ItemManagementView {
 
 
     public void showAddItemSuccess() {
-        System.out.println("New item added successfully.");
+        // This method is kept for compatibility but doesn't need to do anything
+        // since we're using web responses instead of console output
     }
 
     public void displayAllItems(List<Item> items) {
-        System.out.println("List of all items:");
-        for (Item item : items) {
-            System.out.println("Item Code: " + item.getItemCode() + ", Item Name: " + item.getItemName() + ", Price: " + item.getPrice() + ", Discount: " + item.getDiscount());
-        }
+        // This method is kept for compatibility but doesn't need to do anything
+        // since we're using web responses instead of console output
     }
 
     public String getItemCodeToDelete() {
@@ -71,7 +70,8 @@ public class ItemManagementView {
     }
 
     public void showDeleteItemSuccess() {
-        System.out.println("Item deleted successfully.");
+        // This method is kept for compatibility but doesn't need to do anything
+        // since we're using web responses instead of console output
     }
 
     public String getItemCodeToEdit() {
@@ -80,45 +80,7 @@ public class ItemManagementView {
         return scanner.nextLine();
     }
 
-//    public Item getUpdatedItemDetails(Item item) {
-//        System.out.println("Enter new item name: ");
-//        String itemName = scanner.nextLine();
-//        System.out.println("Enter new item price: ");
-//        double price = scanner.nextDouble();
-//        System.out.println("Enter new item discount (if any): ");
-//        double discount = scanner.nextDouble();
-//
-//        item.setItemName(itemName);
-//        item.setPrice(price);
-//        item.setDiscount(discount);
-//
-//        return item;
-//    }
-//public Item getUpdatedItemDetails(Item item) {
-//    System.out.println("Leave field empty to keep the current value.");
-//
-//    System.out.println("Enter new item name (leave blank to keep current): ");
-//    String itemName = scanner.nextLine();
-//    if (!itemName.trim().isEmpty()) {
-//        item.setItemName(itemName);
-//    }
-//
-//    System.out.println("Enter new item price (leave blank to keep current): ");
-//    String priceInput = scanner.nextLine();
-//    if (!priceInput.trim().isEmpty()) {
-//        double price = Double.parseDouble(priceInput);
-//        item.setPrice(price);
-//    }
-//
-//    System.out.println("Enter new item discount (leave blank to keep current): ");
-//    String discountInput = scanner.nextLine();
-//    if (!discountInput.trim().isEmpty()) {
-//        double discount = Double.parseDouble(discountInput);
-//        item.setDiscount(discount);
-//    }
-//
-//    return item;
-//}
+
 public Item getUpdatedItemDetails(Item item) {
     System.out.println("Leave field empty to keep the current value.");
 
@@ -146,10 +108,12 @@ public Item getUpdatedItemDetails(Item item) {
 }
 
     public void showEditItemSuccess() {
-        System.out.println("Item updated successfully.");
+        // This method is kept for compatibility but doesn't need to do anything
+        // since we're using web responses instead of console output
     }
 
     public void showItemNotFound() {
-        System.out.println("Item not found.");
+        // This method is kept for compatibility but doesn't need to do anything
+        // since we're using web responses instead of console output
     }
 }

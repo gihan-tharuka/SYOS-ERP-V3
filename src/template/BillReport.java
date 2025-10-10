@@ -35,4 +35,8 @@ public class BillReport extends ReportTemplate {
                     bill.getBillDate(), bill.getPaymentMethod());
         }
     }
+
+    public List<Bill> getBillDetails() {
+        return billDetails;
+    }
 }
