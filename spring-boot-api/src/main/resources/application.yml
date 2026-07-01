@@ -36,3 +36,7 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: method
     tags-sorter: alpha
+
+syos:
+  cors:
+    allowed-origins: ${SYOS_CORS_ALLOWED_ORIGINS:http://localhost:5173}
