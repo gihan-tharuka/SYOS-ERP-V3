@@ -1,6 +1,7 @@
 package com.syos.erp.sales;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,6 +31,15 @@ public class Sale {
     @NotNull
     @Column(name = "sale_date", nullable = false)
     private LocalDate saleDate;
+
+    @NotNull
+    @Column(name = "sale_timestamp", nullable = false)
+    private LocalDateTime saleTimestamp;
+
+    @NotBlank
+    @Size(max = 255)
+    @Column(name = "cashier_name", nullable = false)
+    private String cashierName;
 
     @NotBlank
     @Size(max = 50)

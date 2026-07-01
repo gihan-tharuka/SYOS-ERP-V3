@@ -8,5 +8,7 @@ public interface BillItemRepository extends JpaRepository<BillItem, Long> {
 
     List<BillItem> findByBillSerialNumber(Long serialNumber);
 
+    List<BillItem> findByBillSerialNumberOrderByIdAsc(Long serialNumber);
+
     List<BillItem> findByProductId(Long productId);
 }

@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SaleRepository extends JpaRepository<Sale, Long> {
 
+    List<Sale> findAllByOrderByIdDesc();
+
     List<Sale> findBySaleDate(LocalDate saleDate);
 
     List<Sale> findByTransactionType(String transactionType);

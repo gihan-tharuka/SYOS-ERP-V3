@@ -50,6 +50,17 @@ Phase 3 adds the inventory movement and low-stock reporting workflows:
 
 Sales and billing APIs are planned for the next phase. Authentication, customer/web-store/cart/checkout, frontend, image upload, and PDF reports are still intentionally out of scope.
 
+## Phase 4 Scope
+
+Phase 4 adds POS sales and bill generation:
+
+- Create a POS sale from shelf stock.
+- Generate a bill and bill items transactionally.
+- Decrement shelf stock only after the whole sale is valid.
+- Read sales and bills with item details.
+
+Authentication, Swagger/OpenAPI docs, Docker, and CI are planned polish phases. Customer/web-store/cart/checkout, frontend, image upload, and PDF reports remain out of scope.
+
 ## Phase 2 API Routes
 
 Suppliers:
@@ -109,6 +120,15 @@ POST /api/inventory/shelf-stock/reshelve
 GET  /api/reorder-levels/alerts
 GET  /api/reports/reorder
 GET  /api/reports/stock
+```
+
+Phase 4 sales/billing routes:
+
+```text
+POST /api/sales
+GET  /api/sales
+GET  /api/sales/{id}
+GET  /api/bills/{serialNumber}
 ```
 
 ## Sample Requests
@@ -226,6 +246,56 @@ Sample stock report response:
     "status": "OK"
   }
 ]
+```
+
+Create POS sale:
+
+```json
+{
+  "cashierName": "Demo Cashier",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 2
+    },
+    {
+      "productId": 2,
+      "quantity": 1
+    }
+  ]
+}
+```
+
+Sample bill response:
+
+```json
+{
+  "saleId": 10,
+  "cashierName": "Demo Cashier",
+  "saleDateTime": "2026-07-01T10:30:00",
+  "billSerialNumber": 15,
+  "totalAmount": 3800.00,
+  "items": [
+    {
+      "id": 31,
+      "productId": 1,
+      "productCode": "ITEM001",
+      "productName": "Laptop",
+      "quantity": 2,
+      "unitPrice": 1500.00,
+      "lineTotal": 3000.00
+    },
+    {
+      "id": 32,
+      "productId": 2,
+      "productCode": "ITEM002",
+      "productName": "Smartphone",
+      "quantity": 1,
+      "unitPrice": 800.00,
+      "lineTotal": 800.00
+    }
+  ]
+}
 ```
 
 ## Schema Notes
