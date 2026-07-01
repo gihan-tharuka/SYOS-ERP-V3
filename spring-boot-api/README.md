@@ -40,6 +40,16 @@ Phase 2 adds CRUD APIs for the portfolio MVP foundation:
 
 Sales, billing, report, authentication, web-store, customer-cart, checkout, and image-upload APIs are planned for later phases.
 
+## Phase 3 Scope
+
+Phase 3 adds the inventory movement and low-stock reporting workflows:
+
+- Reshelving stock from a main stock batch to shelf stock.
+- Reorder alert APIs based on calculated stock totals.
+- Stock summary report API.
+
+Sales and billing APIs are planned for the next phase. Authentication, customer/web-store/cart/checkout, frontend, image upload, and PDF reports are still intentionally out of scope.
+
 ## Phase 2 API Routes
 
 Suppliers:
@@ -90,6 +100,15 @@ GET    /api/reorder-levels/{id}
 POST   /api/reorder-levels
 PUT    /api/reorder-levels/{id}
 DELETE /api/reorder-levels/{id}
+```
+
+Phase 3 inventory/report routes:
+
+```text
+POST /api/inventory/shelf-stock/reshelve
+GET  /api/reorder-levels/alerts
+GET  /api/reports/reorder
+GET  /api/reports/stock
 ```
 
 ## Sample Requests
@@ -150,6 +169,63 @@ Create reorder level:
   "thresholdQuantity": 50,
   "totalStock": 100
 }
+```
+
+Reshelve stock:
+
+```json
+{
+  "mainStockBatchId": 1,
+  "shelfStockId": 1,
+  "quantity": 10
+}
+```
+
+Sample reshelving response:
+
+```json
+{
+  "productId": 1,
+  "productCode": "ITEM001",
+  "productName": "Laptop",
+  "mainStockBatchId": 1,
+  "updatedMainStockQuantity": 40,
+  "shelfStockId": 1,
+  "updatedShelfStockQuantity": 49,
+  "movedQuantity": 10
+}
+```
+
+Sample reorder alert response:
+
+```json
+[
+  {
+    "productId": 12,
+    "productCode": "RICE001",
+    "productName": "White rice",
+    "thresholdQuantity": 50,
+    "currentTotalStock": 40,
+    "status": "LOW_STOCK"
+  }
+]
+```
+
+Sample stock report response:
+
+```json
+[
+  {
+    "productId": 12,
+    "productCode": "RICE001",
+    "productName": "White rice",
+    "totalMainStockQuantity": 60,
+    "totalShelfStockQuantity": 20,
+    "totalAvailableQuantity": 80,
+    "reorderThreshold": 50,
+    "status": "OK"
+  }
+]
 ```
 
 ## Schema Notes

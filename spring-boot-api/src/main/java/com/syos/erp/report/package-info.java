@@ -1,4 +1,4 @@
 /**
- * Report services and projections will be added after the Phase 1 persistence foundation.
+ * Read-only stock and reorder report APIs for the Spring Boot migration.
  */
 package com.syos.erp.report;

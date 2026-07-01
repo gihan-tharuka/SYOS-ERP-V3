@@ -2,6 +2,9 @@ package com.syos.erp.inventory;
 
 import java.util.List;
 
+import com.syos.erp.report.ReorderAlertResponse;
+import com.syos.erp.report.ReportService;
+
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -20,14 +23,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReorderLevelController {
 
     private final ReorderLevelService reorderLevelService;
+    private final ReportService reportService;
 
-    public ReorderLevelController(ReorderLevelService reorderLevelService) {
+    public ReorderLevelController(ReorderLevelService reorderLevelService, ReportService reportService) {
         this.reorderLevelService = reorderLevelService;
+        this.reportService = reportService;
     }
 
     @GetMapping
     public List<ReorderLevelResponse> findAll() {
         return reorderLevelService.findAll();
+    }
+
+    @GetMapping("/alerts")
+    public List<ReorderAlertResponse> getAlerts() {
+        return reportService.getReorderAlerts();
     }
 
     @GetMapping("/{id}")

@@ -101,6 +101,42 @@ public class InventoryService {
         shelfStockRepository.delete(shelfStock);
     }
 
+    @Transactional
+    public ReshelveStockResponse reshelve(ReshelveStockRequest request) {
+        MainStockBatch batch = getMainStockBatch(request.mainStockBatchId());
+        ShelfStock shelfStock = getShelfStock(request.shelfStockId());
+
+        if (!batch.getProduct().getId().equals(shelfStock.getProduct().getId())) {
+            throw new BadRequestException("Main stock batch and shelf stock must belong to the same product");
+        }
+        if (batch.getQuantity() < request.quantity()) {
+            throw new BadRequestException("Main stock batch does not have enough available quantity");
+        }
+
+        int remainingShelfCapacity = shelfStock.getShelfCapacity() - shelfStock.getCurrentQuantity();
+        if (remainingShelfCapacity < request.quantity()) {
+            throw new BadRequestException("Shelf stock does not have enough remaining capacity");
+        }
+
+        batch.setQuantity(batch.getQuantity() - request.quantity());
+        shelfStock.setCurrentQuantity(shelfStock.getCurrentQuantity() + request.quantity());
+
+        MainStockBatch updatedBatch = mainStockBatchRepository.save(batch);
+        ShelfStock updatedShelfStock = shelfStockRepository.save(shelfStock);
+        Product product = updatedBatch.getProduct();
+
+        return new ReshelveStockResponse(
+                product.getId(),
+                product.getProductCode(),
+                product.getProductName(),
+                updatedBatch.getId(),
+                updatedBatch.getQuantity(),
+                updatedShelfStock.getId(),
+                updatedShelfStock.getCurrentQuantity(),
+                request.quantity()
+        );
+    }
+
     private void applyMainStockBatchRequest(MainStockBatch batch, MainStockBatchRequest request) {
         Product product = productRepository.findById(request.productId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product", request.productId()));

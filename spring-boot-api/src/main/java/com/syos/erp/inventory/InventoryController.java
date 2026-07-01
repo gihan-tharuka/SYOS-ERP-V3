@@ -81,4 +81,9 @@ public class InventoryController {
     public void deleteShelfStock(@PathVariable Long id) {
         inventoryService.deleteShelfStock(id);
     }
+
+    @PostMapping("/shelf-stock/reshelve")
+    public ReshelveStockResponse reshelve(@Valid @RequestBody ReshelveStockRequest request) {
+        return inventoryService.reshelve(request);
+    }
 }
