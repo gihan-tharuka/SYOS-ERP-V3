@@ -2,6 +2,7 @@ package com.syos.erp.supplier;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/suppliers")
+@Tag(name = "Suppliers", description = "Supplier directory management")
 public class SupplierController {
 
     private final SupplierService supplierService;

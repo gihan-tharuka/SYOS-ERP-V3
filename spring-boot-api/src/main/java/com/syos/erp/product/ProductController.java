@@ -2,6 +2,7 @@ package com.syos.erp.product;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/products")
+@Tag(name = "Products", description = "Product catalog management")
 public class ProductController {
 
     private final ProductService productService;

@@ -1,0 +1,33 @@
+name: Spring Boot API CI
+
+on:
+  push:
+    paths:
+      - "spring-boot-api/**"
+      - ".github/workflows/spring-boot-api-ci.yml"
+  pull_request:
+    paths:
+      - "spring-boot-api/**"
+      - ".github/workflows/spring-boot-api-ci.yml"
+
+jobs:
+  test:
+    name: Maven Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: spring-boot-api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Run tests
+        run: mvn -B test

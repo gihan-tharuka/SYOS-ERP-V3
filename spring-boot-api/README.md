@@ -1,67 +1,139 @@
 # SYOS ERP Spring Boot API
 
-This folder contains the Spring Boot backend migration of the legacy Java Servlet/JSP SYOS ERP project.
+Spring Boot backend migration of the legacy Java Servlet/JSP SYOS ERP project.
 
-The legacy application is still preserved in the repository root as a reference implementation. This module is a new backend API foundation and does not migrate JSP pages or web-store/customer-cart flows.
+The original Servlet/JSP application is preserved in the repository root as legacy reference code. This module is the modern backend API built for a portfolio MVP: product catalog, supplier management, inventory, reshelving, reorder alerts, stock reports, POS sales, and bill generation.
 
-## Phase 1 Scope
+## Tech Stack
 
-Phase 1 includes:
+- Java 17
+- Spring Boot 3.5
+- Spring Web
+- Spring Data JPA / Hibernate
+- Jakarta Bean Validation
+- MySQL 8
+- Flyway
+- Lombok
+- springdoc-openapi / Swagger UI
+- JUnit 5 and Mockito
+- Docker Compose
+- GitHub Actions CI
 
-- Maven Spring Boot project structure.
-- Java 17 configuration.
-- Spring Web, Spring Data JPA, Validation, MySQL, Flyway, Lombok, and Spring Boot Test dependencies.
-- Environment-based MySQL configuration.
-- Flyway migrations for the stable ERP tables:
-  - `suppliers`
-  - `products`
-  - `main_stock_batches`
-  - `shelf_stock`
-  - `reorder_levels`
-  - `sales`
-  - `bills`
-  - `bill_items`
-- JPA entities and Spring Data repositories for the same tables.
-- A simple health endpoint:
-  - `GET /`
-  - `GET /api/health`
+## Architecture
 
-Phase 1 intentionally does not include product, inventory, sales, or report APIs yet.
+The API follows a simple layered structure:
 
-## Phase 2 Scope
+```text
+Controller -> DTO -> Service -> Repository -> JPA Entity -> MySQL
+```
 
-Phase 2 adds CRUD APIs for the portfolio MVP foundation:
+Controllers stay thin and only handle HTTP routing. Services contain business rules such as stock validation, reshelving, reorder calculations, and transactional POS sale creation. Repositories use Spring Data JPA. Flyway owns schema creation and seed data.
 
-- Suppliers
-- Products
-- Main stock batches
-- Shelf stock
-- Reorder levels
+## What Was Modernized
 
-Sales, billing, report, authentication, web-store, customer-cart, checkout, and image-upload APIs are planned for later phases.
+- Replaced Servlet/JSP request handling with Spring MVC REST controllers.
+- Replaced hand-written JDBC DAOs with Spring Data JPA repositories.
+- Replaced hardcoded DB configuration with environment variables.
+- Added Flyway migrations for repeatable database setup.
+- Added DTOs and validation instead of exposing persistence classes directly.
+- Added clean JSON error responses for validation and missing resources.
+- Added transactional inventory movement and POS sale generation.
+- Added Swagger UI, Docker Compose, and CI for easier review.
 
-## Phase 3 Scope
+## Current Scope
 
-Phase 3 adds the inventory movement and low-stock reporting workflows:
+Implemented:
 
-- Reshelving stock from a main stock batch to shelf stock.
-- Reorder alert APIs based on calculated stock totals.
-- Stock summary report API.
+- Suppliers CRUD
+- Products CRUD
+- Main stock CRUD
+- Shelf stock CRUD
+- Reorder level CRUD
+- Reshelving from main stock to shelf stock
+- Reorder alerts
+- Stock summary report
+- POS sale creation from shelf stock
+- Bill lookup
 
-Sales and billing APIs are planned for the next phase. Authentication, customer/web-store/cart/checkout, frontend, image upload, and PDF reports are still intentionally out of scope.
+Not implemented yet:
 
-## Phase 4 Scope
+- Authentication and authorization
+- Customer/web store/cart/checkout flows
+- Frontend migration
+- Image upload handling
+- PDF reports
 
-Phase 4 adds POS sales and bill generation:
+## Local Setup
 
-- Create a POS sale from shelf stock.
-- Generate a bill and bill items transactionally.
-- Decrement shelf stock only after the whole sale is valid.
-- Read sales and bills with item details.
+Prerequisites:
 
-Authentication, Swagger/OpenAPI docs, Docker, and CI are planned polish phases. Customer/web-store/cart/checkout, frontend, image upload, and PDF reports remain out of scope.
+- Java 17
+- Maven 3.9+
+- MySQL 8 or compatible MySQL/MariaDB server
 
-## Phase 2 API Routes
+Create a database and configure environment variables:
+
+```bash
+export SYOS_DB_URL='jdbc:mysql://localhost:3306/syos_erp?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
+export SYOS_DB_USERNAME='root'
+export SYOS_DB_PASSWORD=''
+export SYOS_API_PORT='8080'
+```
+
+Run tests and start the app:
+
+```bash
+mvn test
+mvn spring-boot:run
+```
+
+Health check:
+
+```text
+GET http://localhost:8080/api/health
+```
+
+Swagger UI:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+OpenAPI JSON:
+
+```text
+http://localhost:8080/v3/api-docs
+```
+
+## Docker Compose Setup
+
+Copy the example env file if you want local overrides:
+
+```bash
+cp .env.example .env
+```
+
+Start MySQL and the API:
+
+```bash
+docker compose up --build
+```
+
+The API will be available at:
+
+```text
+http://localhost:8080
+```
+
+MySQL data is persisted in the `syos_mysql_data` Docker volume.
+
+Validate Compose configuration:
+
+```bash
+docker compose config
+```
+
+## API Route Summary
 
 Suppliers:
 
@@ -83,7 +155,7 @@ PUT    /api/products/{id}
 DELETE /api/products/{id}
 ```
 
-Main stock:
+Inventory:
 
 ```text
 GET    /api/inventory/main-stock
@@ -91,19 +163,17 @@ GET    /api/inventory/main-stock/{id}
 POST   /api/inventory/main-stock
 PUT    /api/inventory/main-stock/{id}
 DELETE /api/inventory/main-stock/{id}
-```
 
-Shelf stock:
-
-```text
 GET    /api/inventory/shelf-stock
 GET    /api/inventory/shelf-stock/{id}
 POST   /api/inventory/shelf-stock
 PUT    /api/inventory/shelf-stock/{id}
 DELETE /api/inventory/shelf-stock/{id}
+
+POST   /api/inventory/shelf-stock/reshelve
 ```
 
-Reorder levels:
+Reorder levels and reports:
 
 ```text
 GET    /api/reorder-levels
@@ -111,39 +181,30 @@ GET    /api/reorder-levels/{id}
 POST   /api/reorder-levels
 PUT    /api/reorder-levels/{id}
 DELETE /api/reorder-levels/{id}
+GET    /api/reorder-levels/alerts
+
+GET    /api/reports/reorder
+GET    /api/reports/stock
 ```
 
-Phase 3 inventory/report routes:
+Sales and bills:
 
 ```text
-POST /api/inventory/shelf-stock/reshelve
-GET  /api/reorder-levels/alerts
-GET  /api/reports/reorder
-GET  /api/reports/stock
+POST   /api/sales
+GET    /api/sales
+GET    /api/sales/{id}
+GET    /api/bills/{serialNumber}
 ```
 
-Phase 4 sales/billing routes:
+## Sample API Flow
 
-```text
-POST /api/sales
-GET  /api/sales
-GET  /api/sales/{id}
-GET  /api/bills/{serialNumber}
-```
-
-## Sample Requests
-
-Create supplier:
-
-```json
-{
-  "username": "supplier3",
-  "companyName": "Fresh Goods Ltd.",
-  "contactPerson": "Amara Silva",
-  "email": "amara@freshgoods.example",
-  "mobile": "0771234567"
-}
-```
+1. Create a supplier.
+2. Create a product.
+3. Add a main stock batch for the product.
+4. Create shelf stock for the product.
+5. Reshelve stock from the main stock batch into shelf stock.
+6. Create a POS sale that consumes shelf stock.
+7. Retrieve the generated bill.
 
 Create product:
 
@@ -171,26 +232,6 @@ Create main stock batch:
 }
 ```
 
-Create shelf stock:
-
-```json
-{
-  "productId": 12,
-  "shelfCapacity": 50,
-  "currentQuantity": 20
-}
-```
-
-Create reorder level:
-
-```json
-{
-  "productId": 12,
-  "thresholdQuantity": 50,
-  "totalStock": 100
-}
-```
-
 Reshelve stock:
 
 ```json
@@ -199,53 +240,6 @@ Reshelve stock:
   "shelfStockId": 1,
   "quantity": 10
 }
-```
-
-Sample reshelving response:
-
-```json
-{
-  "productId": 1,
-  "productCode": "ITEM001",
-  "productName": "Laptop",
-  "mainStockBatchId": 1,
-  "updatedMainStockQuantity": 40,
-  "shelfStockId": 1,
-  "updatedShelfStockQuantity": 49,
-  "movedQuantity": 10
-}
-```
-
-Sample reorder alert response:
-
-```json
-[
-  {
-    "productId": 12,
-    "productCode": "RICE001",
-    "productName": "White rice",
-    "thresholdQuantity": 50,
-    "currentTotalStock": 40,
-    "status": "LOW_STOCK"
-  }
-]
-```
-
-Sample stock report response:
-
-```json
-[
-  {
-    "productId": 12,
-    "productCode": "RICE001",
-    "productName": "White rice",
-    "totalMainStockQuantity": 60,
-    "totalShelfStockQuantity": 20,
-    "totalAvailableQuantity": 80,
-    "reorderThreshold": 50,
-    "status": "OK"
-  }
-]
 ```
 
 Create POS sale:
@@ -284,62 +278,41 @@ Sample bill response:
       "quantity": 2,
       "unitPrice": 1500.00,
       "lineTotal": 3000.00
-    },
-    {
-      "id": 32,
-      "productId": 2,
-      "productCode": "ITEM002",
-      "productName": "Smartphone",
-      "quantity": 1,
-      "unitPrice": 800.00,
-      "lineTotal": 800.00
     }
   ]
 }
 ```
 
-## Schema Notes
+## Testing
 
-The legacy `items` table is renamed to `products` for clearer backend terminology.
-
-The legacy `main_stock` table is renamed to `main_stock_batches` because each row represents a supplier batch for a product.
-
-Authentication and web-store/customer checkout tables are not included in Phase 1 because the inspected legacy schema was incomplete for those flows.
-
-## MySQL Configuration
-
-The app reads database settings from environment variables:
-
-```bash
-export SYOS_DB_URL='jdbc:mysql://localhost:3306/syos_erp?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
-export SYOS_DB_USERNAME='root'
-export SYOS_DB_PASSWORD=''
-export SYOS_API_PORT='8080'
-```
-
-Flyway is enabled by default. To disable it temporarily:
-
-```bash
-export SYOS_FLYWAY_ENABLED=false
-```
-
-## Run
-
-From this folder:
+Run:
 
 ```bash
 mvn test
-mvn spring-boot:run
 ```
 
-Then open:
+GitHub Actions also runs this command for changes under `spring-boot-api`.
 
-```text
-http://localhost:8080/api/health
-```
+## Database Notes
 
-Expected response:
+Flyway migrations create the MVP schema and seed demo data:
 
-```json
-{"status":"UP"}
-```
+- `suppliers`
+- `products`
+- `main_stock_batches`
+- `shelf_stock`
+- `reorder_levels`
+- `sales`
+- `bills`
+- `bill_items`
+
+Legacy names were cleaned up where useful. For example, the old `items` concept is now `products`, and old `main_stock` rows are modeled as `main_stock_batches`.
+
+## Known Limitations
+
+- No authentication or role-based security yet.
+- POS sale creation assumes cash payment and sets cash tendered equal to the total.
+- Shelf stock consumption uses shelf stock rows in ID order.
+- Customer-facing web store and checkout are intentionally excluded because the legacy schema for those flows was incomplete.
+- No frontend is included; this module is API-only.
+- No PDF/export report generation yet.

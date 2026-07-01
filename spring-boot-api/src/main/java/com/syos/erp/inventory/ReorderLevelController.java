@@ -5,6 +5,7 @@ import java.util.List;
 import com.syos.erp.report.ReorderAlertResponse;
 import com.syos.erp.report.ReportService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/reorder-levels")
+@Tag(name = "Reorder Levels", description = "Reorder thresholds and low-stock alerts")
 public class ReorderLevelController {
 
     private final ReorderLevelService reorderLevelService;

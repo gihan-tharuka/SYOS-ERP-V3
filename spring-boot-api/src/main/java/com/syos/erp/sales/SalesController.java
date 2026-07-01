@@ -2,6 +2,7 @@ package com.syos.erp.sales;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/sales")
+@Tag(name = "Sales", description = "POS sale creation and sale lookup")
 public class SalesController {
 
     private final SalesService salesService;

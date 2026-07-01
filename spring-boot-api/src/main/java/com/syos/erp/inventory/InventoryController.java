@@ -2,6 +2,7 @@ package com.syos.erp.inventory;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/inventory")
+@Tag(name = "Inventory", description = "Main stock, shelf stock, and reshelving workflows")
 public class InventoryController {
 
     private final InventoryService inventoryService;
