@@ -1,5 +1,11 @@
 # SYOS-ERP-V3 (Synex Outlet Store System)
 
+## Spring Boot Migration
+
+Phase 1 of the Spring Boot backend migration has been started in [`spring-boot-api`](spring-boot-api/README.md).
+
+The existing Servlet/JSP application in this repository remains preserved as legacy reference code. The new Spring Boot module currently contains the Maven project setup, MySQL/Flyway configuration, initial schema migrations, JPA entities, repositories, and a simple health endpoint.
+
 ## Overview
 
 SYOS-ERP-V3 is a comprehensive Enterprise Resource Planning (ERP) system designed specifically for retail outlet management. The system handles inventory management, sales operations, user management, reporting, and customer account management, providing a complete solution for managing retail operations efficiently.

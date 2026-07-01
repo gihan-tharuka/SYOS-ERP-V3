@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: syos-erp-api
+
+  datasource:
+    url: ${SYOS_DB_URL:jdbc:mysql://localhost:3306/syos_erp?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SYOS_DB_USERNAME:root}
+    password: ${SYOS_DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: ${SYOS_FLYWAY_ENABLED:true}
+    locations: classpath:db/migration
+
+server:
+  port: ${SYOS_API_PORT:8080}
+
+logging:
+  level:
+    com.syos.erp: INFO
